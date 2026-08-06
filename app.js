@@ -77,22 +77,29 @@ async function playVideo(source, { prepared = false } = {}) {
   volumeControl.hidden = false;
   sequenceVideo.volume = volume;
 
-  setMuted(false);
-  if (!prepared) {
+  if (!prepared || !sequenceVideo.src || sequenceVideo.readyState === 0) {
     sequenceVideo.src = source;
-    sequenceVideo.load();
+    try { sequenceVideo.load(); } catch {}
   }
 
   autoplaying = true;
   updatePlayback({ autoplay: true });
 
+  // 1차 시도: 음소거 해제 상태로 재생 시도
+  setMuted(false);
   try {
     await sequenceVideo.play();
-  } catch {
+  } catch (err) {
+    console.warn("Unmuted play failed, falling back to muted play:", err);
+    // 2차 시도: 음소거 상태로 재생 시도 (브라우저 자동재생 정책 방어)
     setMuted(true);
-    const playing = await sequenceVideo.play().then(() => true, () => false);
-    if (!playing) updatePlayback();
+    try {
+      await sequenceVideo.play();
+    } catch (e) {
+      console.error("Muted play failed as well:", e);
+    }
   }
+  updatePlayback();
 }
 
 function showScenario(index = 0) {
