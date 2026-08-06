@@ -5,65 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Hyundai UserStory 20px-Tech</title>
   <meta name="description" content="Hyundai UserStory 인터랙티브 플레이북 (Tech 버전)">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Hyundai UserStory 20px-Tech">
-  <meta property="og:description" content="Hyundai UserStory 인터랙티브 플레이북 (Tech 버전)">
-  <link rel="stylesheet" href="style.css?v=20260806-tech-r1">
+  <link rel="stylesheet" href="style.css?v=20260806-tech-r2">
 </head>
+<!--
+  16px_Ref 방식: body overflow 허용 + scroll-snap.
+  wheel 이벤트를 건드리지 않으므로 macOS 트랙패드 관성도 브라우저가 처리한다.
+-->
 <body data-phase="playbook" data-indicator-tone="white">
 
   <header class="top-center-header">
     <h1 class="header-title">Hyundai UserStory</h1>
   </header>
 
-  <!-- ── Playbook 메인 시퀀스 ── -->
-  <main class="playbook-sequence" aria-label="플레이북 시퀀스">
-    <section class="playbook-preview">
-      <article class="preview-panel">
-        <span>PLAYBOOK</span>
-        <strong>LEFT CONTENT</strong>
-      </article>
-      <article class="preview-panel">
-        <span>PLAYBOOK</span>
-        <strong>RIGHT CONTENT</strong>
-      </article>
-    </section>
-  </main>
+  <!-- ── 스크롤 컨테이너 ── -->
+  <div class="scroll-root">
 
-  <!-- ── 시나리오 캔버스 ── -->
-  <section id="scenario-canvas-stage" class="scenario-canvas-stage" aria-label="시나리오 캔버스">
-    <div class="canvas-viewport">
-      <div id="scenario-canvas-track" class="canvas-track">
-        <article class="canvas-slide active" data-canvas-index="0">
-          <div class="canvas-frame">SCENARIO CANVAS 01</div>
-        </article>
-        <article class="canvas-slide" data-canvas-index="1">
-          <div class="canvas-frame">SCENARIO CANVAS 02</div>
-        </article>
-        <article class="canvas-slide" data-canvas-index="2">
-          <div class="canvas-frame">SCENARIO CANVAS 03</div>
-        </article>
-        <article class="canvas-slide" data-canvas-index="3">
-          <div class="canvas-frame">SCENARIO CANVAS 04</div>
-        </article>
-      </div>
-    </div>
-
-    <div class="canvas-bottom-controls">
-      <div id="scenario-indicator" class="canvas-pagination" aria-label="시나리오 캔버스 페이지">
-        <div class="pagination-dots">
-          <button class="p-dot active" type="button" data-idx="0" aria-label="1페이지"></button>
-          <button class="p-dot" type="button" data-idx="1" aria-label="2페이지"></button>
-          <button class="p-dot" type="button" data-idx="2" aria-label="3페이지"></button>
-          <button class="p-dot" type="button" data-idx="3" aria-label="4페이지"></button>
+    <!-- 슬롯 1: 플레이북 -->
+    <section class="scroll-section" id="section-playbook">
+      <main class="playbook-sequence" aria-label="플레이북 시퀀스">
+        <div class="playbook-preview">
+          <article class="preview-panel">
+            <span>PLAYBOOK</span>
+            <strong>LEFT CONTENT</strong>
+          </article>
+          <article class="preview-panel">
+            <span>PLAYBOOK</span>
+            <strong>RIGHT CONTENT</strong>
+          </article>
         </div>
-        <span id="indicator-counter" class="pagination-text">01 / 04</span>
-      </div>
+      </main>
+    </section>
+
+    <!-- 슬롯 2~5: 시나리오 캔버스 (각 슬라이드가 1뷰포트 높이 차지) -->
+    <section class="scroll-section canvas-section" id="section-canvas-0" data-canvas-index="0">
+      <div class="canvas-frame">SCENARIO CANVAS 01</div>
+    </section>
+    <section class="scroll-section canvas-section" id="section-canvas-1" data-canvas-index="1">
+      <div class="canvas-frame">SCENARIO CANVAS 02</div>
+    </section>
+    <section class="scroll-section canvas-section" id="section-canvas-2" data-canvas-index="2">
+      <div class="canvas-frame">SCENARIO CANVAS 03</div>
+    </section>
+    <section class="scroll-section canvas-section" id="section-canvas-3" data-canvas-index="3">
+      <div class="canvas-frame">SCENARIO CANVAS 04</div>
+    </section>
+
+  </div>
+
+  <!-- ── 고정 인디케이터 (캔버스 구간에서만 표시) ── -->
+  <div id="canvas-indicator" class="canvas-indicator-bar" aria-label="시나리오 캔버스 페이지">
+    <div class="pagination-dots">
+      <button class="p-dot active" type="button" data-idx="0" aria-label="1페이지"></button>
+      <button class="p-dot" type="button" data-idx="1" aria-label="2페이지"></button>
+      <button class="p-dot" type="button" data-idx="2" aria-label="3페이지"></button>
+      <button class="p-dot" type="button" data-idx="3" aria-label="4페이지"></button>
     </div>
-  </section>
+    <span id="indicator-counter" class="pagination-text">01 / 04</span>
+  </div>
 
   <p class="flow-guide">스크롤하여 시퀀스를 전환하세요</p>
 
-  <script type="module" src="app.js?v=20260806-tech-r1"></script>
+  <script src="app.js?v=20260806-tech-r2"></script>
 </body>
 </html>
