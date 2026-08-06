@@ -15,6 +15,7 @@ const indicatorCounter = document.querySelector("#indicator-counter");
 const storedVolume = Number(sessionStorage.getItem("media-volume") ?? "1");
 const TOTAL_CANVAS_SLIDES = 5;
 const introSource = "Asset/Playbook/playbook_video_3_intro.mp4";
+const VIDEO_FADE_DURATION = 700;
 
 let closeAccum = 0;
 let closeResetTimer;
@@ -27,7 +28,33 @@ let closeVolumeTimer;
 let hidePlaybackTimer;
 let suppressVideoClickUntil = 0;
 let autoplaying = false;
+let videoFadeFrame;
+let videoExitPending = false;
 let volume = Number.isFinite(storedVolume) && storedVolume > 0 ? Math.min(1, storedVolume) : 1;
+
+function cancelVideoFade({ restore = false } = {}) {
+  window.cancelAnimationFrame(videoFadeFrame);
+  videoFadeFrame = undefined;
+  if (restore) sequenceVideo.volume = volume;
+}
+
+function fadeOutVideo(onComplete, duration = VIDEO_FADE_DURATION) {
+  cancelVideoFade();
+  const startVolume = sequenceVideo.volume;
+  const startedAt = performance.now();
+
+  function step(now) {
+    const progress = Math.min(1, (now - startedAt) / duration);
+    sequenceVideo.volume = startVolume * (1 - progress);
+    if (progress < 1) videoFadeFrame = window.requestAnimationFrame(step);
+    else {
+      videoFadeFrame = undefined;
+      onComplete?.();
+    }
+  }
+
+  videoFadeFrame = window.requestAnimationFrame(step);
+}
 
 function updateVolume() {
   const muted = sequenceVideo.muted;
@@ -69,6 +96,8 @@ function togglePlayback() {
 }
 
 async function playVideo(source, { prepared = false } = {}) {
+  cancelVideoFade({ restore: true });
+  videoExitPending = false;
   scenarioHeader.classList.remove("active");
   scenarioStage.classList.remove("active");
   sequenceVideo.hidden = false;
@@ -110,6 +139,20 @@ function showScenario(index = 0) {
   indicatorCounter.textContent = `${String(canvasIndex + 1).padStart(2, "0")} / 05`;
 }
 
+function finishVideo(force = false) {
+  if (state === "intro" && (force || startOverlay.hidden)) showScenario(0);
+}
+
+function skipVideo() {
+  if (videoExitPending) return;
+  videoExitPending = true;
+  skipButton.hidden = true;
+  fadeOutVideo(() => {
+    videoExitPending = false;
+    finishVideo(true);
+  }, 420);
+}
+
 function moveScenario(direction) {
   if (state !== "scenario") return;
   if (direction > 0 && canvasIndex < TOTAL_CANVAS_SLIDES - 1) showScenario(canvasIndex + 1);
@@ -118,6 +161,8 @@ function moveScenario(direction) {
 
 // 초기 로드용 — src 세팅 + load()로 버퍼링 시작
 function resetExperience() {
+  cancelVideoFade({ restore: true });
+  videoExitPending = false;
   scrollRouter?.reset();
   state = "intro";
   canvasIndex = 0;
@@ -170,14 +215,21 @@ function exitScenarioToPlaybook() {
   window.setTimeout(finishScenarioExit, 540);
 }
 
-sequenceVideo.addEventListener("ended", () => {
-  if (state === "intro" && startOverlay.hidden) showScenario(0);
+sequenceVideo.addEventListener("timeupdate", () => {
+  const remaining = sequenceVideo.duration - sequenceVideo.currentTime;
+  if (!videoFadeFrame && Number.isFinite(remaining) && remaining > 0 && remaining <= VIDEO_FADE_DURATION / 1000) {
+    fadeOutVideo(undefined, remaining * 1000);
+  }
 });
+sequenceVideo.addEventListener("ended", finishVideo);
 sequenceVideo.addEventListener("play", () => {
   updatePlayback({ autoplay: autoplaying });
   autoplaying = false;
 });
-sequenceVideo.addEventListener("pause", () => updatePlayback());
+sequenceVideo.addEventListener("pause", () => {
+  if (sequenceVideo.currentTime < sequenceVideo.duration) cancelVideoFade({ restore: true });
+  updatePlayback();
+});
 
 sequenceVideo.addEventListener("click", () => {
   if (Date.now() <= suppressVideoClickUntil) {
@@ -187,7 +239,7 @@ sequenceVideo.addEventListener("click", () => {
   togglePlayback();
 });
 playbackButton.addEventListener("click", togglePlayback);
-skipButton.addEventListener("click", () => showScenario(0));
+skipButton.addEventListener("click", skipVideo);
 scenarioDots.forEach((dot) => {
   dot.addEventListener("click", () => showScenario(Number(dot.dataset.idx)));
 });
@@ -217,7 +269,7 @@ function handleScenarioStep(direction, absDelta = 0) {
 
 function handleWheel(direction, absDelta) {
   if (state === "intro" && !sequenceVideo.paused && direction > 0) {
-    showScenario(0);
+    skipVideo();
     return true;
   }
   return handleScenarioStep(direction, absDelta);
