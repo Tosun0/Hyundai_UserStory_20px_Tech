@@ -1,0 +1,291 @@
+/* ──────────────────────────────────────────────
+   Hyundai UserStory 20px-Tech
+   Universal Layout 기반
+   ────────────────────────────────────────────── */
+
+:root {
+  font-family: Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif;
+  color: #292929;
+  background: #e8e7e4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button {
+  font: inherit;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 18%, rgb(255 255 255 / .72), transparent 38%),
+    #e8e7e4;
+}
+
+/* ── 인디케이터 색상 토큰 ── */
+body[data-indicator-tone="white"] {
+  --indicator-background: rgb(255 255 255 / .88);
+  --indicator-border: rgb(0 0 0 / .08);
+  --indicator-shadow: 0 8px 24px rgb(15 23 42 / .12);
+  --indicator-dot: rgb(15 23 42 / .25);
+  --indicator-dot-active: #0f172a;
+  --indicator-text: #0f172a;
+}
+
+body[data-indicator-tone="dark"] {
+  --indicator-background: rgb(255 255 255 / .08);
+  --indicator-border: rgb(255 255 255 / .1);
+  --indicator-shadow: 0 4px 20px rgb(0 0 0 / .25);
+  --indicator-dot: rgb(255 255 255 / .25);
+  --indicator-dot-active: #fff;
+  --indicator-text: rgb(255 255 255 / .7);
+}
+
+/* ── 헤더 ── */
+.top-center-header {
+  position: fixed;
+  z-index: 500;
+  top: 40px;
+  left: 50%;
+  width: 327px;
+  max-width: 90vw;
+  height: 42.6667px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 28px;
+  border: 1px solid rgb(15 23 42 / .12);
+  border-radius: 24px;
+  background: rgb(255 255 255 / .9);
+  box-shadow: 0 8px 24px rgb(0 0 0 / .16);
+  transform: translateX(-50%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.header-title {
+  margin: 0;
+  color: #0f172a;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.4px;
+  white-space: nowrap;
+}
+
+/* ── 플레이북 시퀀스 ── */
+.playbook-sequence {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  transition: opacity 500ms ease, transform 600ms cubic-bezier(.16, 1, .3, 1);
+}
+
+body[data-phase="scenario-canvas"] .playbook-sequence {
+  opacity: 0;
+  transform: translateY(-24px) scale(.98);
+  pointer-events: none;
+}
+
+.playbook-preview {
+  width: min(86vw, 1280px);
+  height: min(68vh, 720px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.preview-panel {
+  display: grid;
+  place-content: center;
+  gap: 10px;
+  border-radius: 26px;
+  background: rgb(255 255 255 / .42);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .6);
+  text-align: center;
+}
+
+.preview-panel span {
+  color: rgb(41 41 41 / .42);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .14em;
+}
+
+.preview-panel strong {
+  font-size: clamp(22px, 2.6vw, 42px);
+}
+
+/* ── 시나리오 캔버스 ── */
+.scenario-canvas-stage {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 18%, rgb(255 255 255 / .68), transparent 40%),
+    rgb(232 231 228 / .88);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 520ms ease, visibility 520ms;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.scenario-canvas-stage.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.canvas-viewport,
+.canvas-track,
+.canvas-slide {
+  width: 100%;
+  height: 100%;
+}
+
+.canvas-viewport {
+  overflow: hidden;
+}
+
+.canvas-track {
+  display: flex;
+  transition: transform 600ms cubic-bezier(.16, 1, .3, 1);
+}
+
+.canvas-slide {
+  flex: 0 0 100%;
+  display: grid;
+  place-items: center;
+}
+
+.canvas-frame {
+  width: 90vw;
+  max-height: 80vh;
+  aspect-ratio: 16 / 9;
+  display: grid;
+  place-items: center;
+  background: rgb(255 255 255 / .44);
+  color: rgb(41 41 41 / .5);
+  font-size: clamp(18px, 2.4vw, 36px);
+  font-weight: 700;
+  letter-spacing: .08em;
+  transition: opacity 620ms ease, transform 720ms cubic-bezier(.16, 1, .3, 1);
+}
+
+.scenario-canvas-stage:not(.active) .canvas-frame {
+  opacity: 0;
+  transform: translateY(20px) scale(.985);
+}
+
+/* ── 하단 컨트롤 / 인디케이터 ── */
+.canvas-bottom-controls {
+  position: absolute;
+  z-index: 20;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.canvas-pagination {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 18px;
+  border: 1px solid var(--indicator-border);
+  border-radius: 20px;
+  background: var(--indicator-background);
+  box-shadow: var(--indicator-shadow);
+}
+
+.pagination-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.p-dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--indicator-dot);
+  cursor: pointer;
+  transition: background-color 300ms ease, transform 300ms ease;
+}
+
+.p-dot.active {
+  background: var(--indicator-dot-active);
+  transform: scale(1.2);
+}
+
+.pagination-text {
+  color: var(--indicator-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 플로우 가이드 ── */
+.flow-guide {
+  position: fixed;
+  z-index: 600;
+  right: 24px;
+  bottom: 18px;
+  margin: 0;
+  color: rgb(41 41 41 / .36);
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none;
+  transition: opacity 400ms ease;
+}
+
+body[data-phase="scenario-canvas"] .flow-guide {
+  opacity: 0;
+}
+
+/* ── 반응형 ── */
+@media (max-width: 760px) and (orientation: portrait) {
+  .playbook-preview {
+    width: calc(100vw - 24px);
+    height: calc(100dvh - 180px);
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 88px;
+  }
+
+  .preview-panel {
+    border-radius: 18px;
+  }
+
+  .canvas-frame {
+    width: 90vw;
+  }
+
+  .flow-guide {
+    right: 14px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playbook-sequence,
+  .scenario-canvas-stage,
+  .canvas-track,
+  .canvas-frame,
+  .p-dot {
+    transition: none;
+  }
+}
