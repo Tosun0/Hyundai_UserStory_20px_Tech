@@ -121,10 +121,10 @@ async function playVideo(source, { prepared = false } = {}) {
   }
 }
 
-function showScenario(index = 0) {
+function showScenario(index = 0, { keepVideoPlaying = false } = {}) {
   state = "scenario";
   canvasIndex = Math.max(0, Math.min(index, TOTAL_CANVAS_SLIDES - 1));
-  sequenceVideo.pause();
+  if (!keepVideoPlaying) sequenceVideo.pause();
   sequenceVideo.hidden = false;
   skipButton.hidden = true;
   playbackButton.hidden = true;
@@ -139,17 +139,18 @@ function showScenario(index = 0) {
   indicatorCounter.textContent = `${String(canvasIndex + 1).padStart(2, "0")} / 05`;
 }
 
-function finishVideo(force = false) {
-  if (state === "intro" && (force || startOverlay.hidden)) showScenario(0);
+function finishVideo() {
+  if (state === "intro" && startOverlay.hidden) showScenario(0);
 }
 
 function skipVideo() {
   if (videoExitPending) return;
   videoExitPending = true;
   skipButton.hidden = true;
+  showScenario(0, { keepVideoPlaying: true });
   fadeOutVideo(() => {
     videoExitPending = false;
-    finishVideo(true);
+    sequenceVideo.pause();
   }, VIDEO_FADE_DURATION);
 }
 
@@ -245,6 +246,7 @@ scenarioDots.forEach((dot) => {
 });
 function handleScenarioStep(direction, absDelta = 0) {
   if (state !== "scenario") return false;
+  if (videoExitPending) return true;
 
   if (direction > 0) {
     closeAccum = 0;
