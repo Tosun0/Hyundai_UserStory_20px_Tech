@@ -42,7 +42,7 @@ function setMuted(muted) {
 
 function updatePlayback({ autoplay = false } = {}) {
   window.clearTimeout(hidePlaybackTimer);
-  if (sequenceVideo.hidden) {
+  if (sequenceVideo.hidden || state === "scenario") {
     playbackButton.hidden = true;
     playbackButton.classList.remove("visible");
     return;
@@ -59,7 +59,7 @@ function updatePlayback({ autoplay = false } = {}) {
 }
 
 function togglePlayback() {
-  if (sequenceVideo.hidden) return;
+  if (sequenceVideo.hidden || state === "scenario") return;
   if (sequenceVideo.paused) {
     sequenceVideo.play().catch(() => updatePlayback());
   } else {
@@ -67,7 +67,7 @@ function togglePlayback() {
   }
 }
 
-async function playVideo(source, { prepared = false } = {}) {
+async function playVideo(source) {
   scenarioHeader.classList.remove("active");
   scenarioStage.classList.remove("active");
   backButton.hidden = true;
@@ -76,11 +76,13 @@ async function playVideo(source, { prepared = false } = {}) {
   skipButton.hidden = state !== "intro";
   volumeControl.hidden = false;
   sequenceVideo.volume = volume;
-  setMuted(false);
-  if (!prepared) {
+
+  if (sequenceVideo.getAttribute("src") !== source) {
     sequenceVideo.src = source;
     sequenceVideo.load();
   }
+
+  setMuted(false);
   autoplaying = true;
   updatePlayback({ autoplay: true });
 
@@ -139,7 +141,9 @@ function resetExperience() {
 }
 
 sequenceVideo.addEventListener("ended", () => {
-  showScenario(0);
+  if (state === "intro") {
+    showScenario(0);
+  }
 });
 sequenceVideo.addEventListener("play", () => {
   updatePlayback({ autoplay: autoplaying });
@@ -220,5 +224,5 @@ startOverlay.addEventListener("click", () => {
   window.setTimeout(() => {
     startOverlay.hidden = true;
   }, 380);
-  playVideo(introSource, { prepared: true });
+  playVideo(introSource);
 });
