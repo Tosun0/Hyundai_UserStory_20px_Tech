@@ -67,7 +67,7 @@ function togglePlayback() {
   }
 }
 
-async function playVideo(source) {
+async function playVideo(source, { prepared = false } = {}) {
   scenarioHeader.classList.remove("active");
   scenarioStage.classList.remove("active");
   backButton.hidden = true;
@@ -77,12 +77,12 @@ async function playVideo(source) {
   volumeControl.hidden = false;
   sequenceVideo.volume = volume;
 
-  if (sequenceVideo.getAttribute("src") !== source) {
+  setMuted(false);
+  if (!prepared) {
     sequenceVideo.src = source;
     sequenceVideo.load();
   }
 
-  setMuted(false);
   autoplaying = true;
   updatePlayback({ autoplay: true });
 
@@ -224,5 +224,5 @@ startOverlay.addEventListener("click", () => {
   window.setTimeout(() => {
     startOverlay.hidden = true;
   }, 380);
-  playVideo(introSource);
+  playVideo(introSource, { prepared: true });
 });
