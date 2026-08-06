@@ -145,10 +145,20 @@ function resetExperience() {
 }
 
 function exitScenarioToPlaybook() {
-  resetExperience();
+  // 1. 시나리오 캔버스를 먼저 부드럽게 페이드아웃 (active 클래스 제거)
+  scenarioHeader.classList.remove("active");
+  scenarioStage.classList.remove("active");
+  backButton.hidden = true;
+
+  // 2. 닫히는 560ms 동안 휠 스크롤 차단
   const exitBlocker = (e) => e.preventDefault();
   document.addEventListener("wheel", exitBlocker, { capture: true, passive: false });
   window.setTimeout(() => document.removeEventListener("wheel", exitBlocker, true), 560);
+
+  // 3. 캔버스가 스무스하게 페이드아웃된 후(360ms) 비디오 로드 및 startOverlay 등장
+  window.setTimeout(() => {
+    resetExperience();
+  }, 360);
 }
 
 sequenceVideo.addEventListener("ended", () => {
