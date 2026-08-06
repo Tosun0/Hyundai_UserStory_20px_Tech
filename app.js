@@ -12,7 +12,6 @@ const scenarioStage = document.querySelector("#scenario-canvas-stage");
 const scenarioTrack = document.querySelector("#scenario-canvas-track");
 const scenarioDots = document.querySelectorAll("#scenario-indicator .p-dot");
 const indicatorCounter = document.querySelector("#indicator-counter");
-const backButton = document.querySelector("#back-button");
 const storedVolume = Number(sessionStorage.getItem("media-volume") ?? "1");
 const TOTAL_CANVAS_SLIDES = 5;
 const introSource = "Asset/Playbook/playbook_video_3_intro.mp4";
@@ -72,7 +71,6 @@ function togglePlayback() {
 async function playVideo(source, { prepared = false } = {}) {
   scenarioHeader.classList.remove("active");
   scenarioStage.classList.remove("active");
-  backButton.hidden = true;
   sequenceVideo.hidden = false;
   sequenceVideo.classList.remove("leaving");
   skipButton.hidden = state !== "intro";
@@ -104,7 +102,6 @@ function showScenario(index = 0) {
   volumeControl.hidden = true;
   scenarioHeader.classList.add("active");
   scenarioStage.classList.add("active");
-  backButton.hidden = false;
   scenarioTrack.style.transform = `translateX(-${canvasIndex * 100}%)`;
   scenarioTrack.querySelectorAll(".canvas-slide").forEach((slide, idx) => {
     slide.classList.toggle("active", idx === canvasIndex);
@@ -132,7 +129,6 @@ function resetExperience() {
   sequenceVideo.classList.remove("leaving");
   scenarioHeader.classList.remove("active");
   scenarioStage.classList.remove("active");
-  backButton.hidden = true;
   skipButton.hidden = true;
   playbackButton.hidden = true;
   playbackButton.classList.remove("visible");
@@ -162,7 +158,6 @@ function exitScenarioToPlaybook() {
   // 1. 시나리오 캔버스 페이드아웃 시작
   scenarioHeader.classList.remove("active");
   scenarioStage.classList.remove("active");
-  backButton.hidden = true;
   sequenceVideo.pause();
   startOverlay.classList.remove("exiting", "ready");
   startOverlay.classList.add("returning");
@@ -196,8 +191,6 @@ skipButton.addEventListener("click", () => showScenario(0));
 scenarioDots.forEach((dot) => {
   dot.addEventListener("click", () => showScenario(Number(dot.dataset.idx)));
 });
-backButton.addEventListener("click", exitScenarioToPlaybook);
-
 function handleScenarioStep(direction, absDelta = 0) {
   if (state !== "scenario") return false;
 
