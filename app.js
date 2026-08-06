@@ -83,8 +83,10 @@ async function playVideo(source, { prepared = false } = {}) {
   sequenceVideo.volume = volume;
   setMuted(false);
   if (!prepared) {
-    sequenceVideo.src = source;
-    sequenceVideo.load();
+    if (sequenceVideo.getAttribute("src") !== source) {
+      sequenceVideo.src = source;
+      sequenceVideo.load();
+    }
   }
   autoplaying = true;
   updatePlayback({ autoplay: true });
@@ -129,8 +131,9 @@ function resetExperience() {
   canvasIndex = 0;
   closeAccum = 0;
   sequenceVideo.pause();
-  sequenceVideo.src = introSource;
-  sequenceVideo.load();
+  try {
+    sequenceVideo.currentTime = 0;
+  } catch {}
   sequenceVideo.hidden = false;
   sequenceVideo.classList.remove("leaving");
   scenarioHeader.classList.remove("active");
@@ -155,7 +158,7 @@ function exitScenarioToPlaybook() {
   document.addEventListener("wheel", exitBlocker, { capture: true, passive: false });
   window.setTimeout(() => document.removeEventListener("wheel", exitBlocker, true), 560);
 
-  // 3. 캔버스가 스무스하게 페이드아웃된 후(360ms) 비디오 로드 및 startOverlay 등장
+  // 3. 캔버스가 스무스하게 페이드아웃된 후(360ms) currentTime = 0 및 startOverlay 등장 (video.load() 제거로 검은 프레임 튀는 깜빡임 제거)
   window.setTimeout(() => {
     resetExperience();
   }, 360);
