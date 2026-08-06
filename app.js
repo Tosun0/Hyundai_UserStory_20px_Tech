@@ -15,6 +15,7 @@ const indicatorCounter = document.querySelector("#indicator-counter");
 const backButton = document.querySelector("#back-button");
 const storedVolume = Number(sessionStorage.getItem("media-volume") ?? "1");
 const TOTAL_CANVAS_SLIDES = 5;
+const introSource = "Asset/Playbook/playbook_3_intro.mp4";
 
 let closeAccum = 0;
 let closeResetTimer;
@@ -37,11 +38,9 @@ function updateVolume() {
 }
 
 function setMuted(muted) {
-  [sequenceVideo].forEach((media) => {
-    media.defaultMuted = muted;
-    media.muted = muted;
-    media.toggleAttribute("muted", muted);
-  });
+  sequenceVideo.defaultMuted = muted;
+  sequenceVideo.muted = muted;
+  sequenceVideo.toggleAttribute("muted", muted);
   updateVolume();
 }
 
@@ -52,12 +51,10 @@ function updatePlayback({ autoplay = false } = {}) {
     playbackButton.classList.remove("visible");
     return;
   }
-
   playbackButton.hidden = false;
   playbackButton.textContent = sequenceVideo.paused ? "▶" : "Ⅱ";
   playbackButton.setAttribute("aria-label", sequenceVideo.paused ? "재생" : "정지");
   playbackButton.classList.toggle("visible", !autoplay || sequenceVideo.paused);
-
   if (!sequenceVideo.paused && !autoplay) {
     hidePlaybackTimer = window.setTimeout(() => playbackButton.classList.remove("visible"), 1000);
   }
@@ -78,19 +75,16 @@ async function playVideo(source, { prepared = false } = {}) {
   backButton.hidden = true;
   sequenceVideo.hidden = false;
   sequenceVideo.classList.remove("leaving");
-  skipButton.hidden = !(state === "intro");
+  skipButton.hidden = state !== "intro";
   volumeControl.hidden = false;
   sequenceVideo.volume = volume;
   setMuted(false);
   if (!prepared) {
-    if (sequenceVideo.getAttribute("src") !== source) {
-      sequenceVideo.src = source;
-      sequenceVideo.load();
-    }
+    sequenceVideo.src = source;
+    sequenceVideo.load();
   }
   autoplaying = true;
   updatePlayback({ autoplay: true });
-
   try {
     await sequenceVideo.play();
   } catch {
@@ -125,15 +119,37 @@ function moveScenario(direction) {
   if (direction < 0 && canvasIndex > 0) showScenario(canvasIndex - 1);
 }
 
+// 초기 로드용 — src 세팅 + load()로 버퍼링 시작
 function resetExperience() {
   scrollRouter?.reset();
   state = "intro";
   canvasIndex = 0;
   closeAccum = 0;
   sequenceVideo.pause();
-  try {
-    sequenceVideo.currentTime = 0;
-  } catch {}
+  sequenceVideo.src = introSource;
+  sequenceVideo.load();
+  sequenceVideo.hidden = false;
+  sequenceVideo.classList.remove("leaving");
+  scenarioHeader.classList.remove("active");
+  scenarioStage.classList.remove("active");
+  backButton.hidden = true;
+  skipButton.hidden = true;
+  playbackButton.hidden = true;
+  playbackButton.classList.remove("visible");
+  volumeControl.hidden = true;
+  startOverlay.hidden = false;
+  startOverlay.classList.remove("exiting");
+}
+
+// 캔버스 닫기용 — src/load 없이 UI만 리셋 (깜빡임 방지)
+function softResetUI() {
+  scrollRouter?.reset();
+  state = "intro";
+  canvasIndex = 0;
+  closeAccum = 0;
+  sequenceVideo.pause();
+  try { sequenceVideo.currentTime = 0; } catch {}
+  // src는 이미 세팅돼 있으니 건드리지 않음 — load() 재호출 없음
   sequenceVideo.hidden = false;
   sequenceVideo.classList.remove("leaving");
   scenarioHeader.classList.remove("active");
@@ -148,21 +164,20 @@ function resetExperience() {
 }
 
 function exitScenarioToPlaybook() {
-  // 1. 시나리오 캔버스를 먼저 부드럽게 페이드아웃 (active 클래스 제거)
+  // 1. 시나리오 캔버스 페이드아웃 시작
   scenarioHeader.classList.remove("active");
   scenarioStage.classList.remove("active");
   backButton.hidden = true;
 
-  // 2. 캔버스 CSS transition이 520ms — 그 동안 휠 스크롤 차단
+  // 2. 캔버스 CSS transition 520ms 동안 휠 차단
   const exitBlocker = (e) => e.preventDefault();
   document.addEventListener("wheel", exitBlocker, { capture: true, passive: false });
   window.setTimeout(() => document.removeEventListener("wheel", exitBlocker, true), 600);
 
-  // 3. 캔버스 opacity 전환이 완전히 끝난 뒤(540ms > 520ms)에 비디오 seek + startOverlay 등장.
-  //    360ms에 실행하면 canvas가 아직 31% 불투명할 때 seek 프레임이 비쳐서 깜빡임 발생.
-  window.setTimeout(() => {
-    resetExperience();
-  }, 540);
+  // 3. 캔버스가 완전히 사라진 뒤(540ms > 520ms)에 소프트 리셋
+  //    → src/load 재호출 없으니 검은 프레임 깜빡임 없음
+  //    → src는 이미 세팅돼 있으니 다음 startOverlay 클릭 시 prepared:true로 정상 재생됨
+  window.setTimeout(softResetUI, 540);
 }
 
 sequenceVideo.addEventListener("ended", () => {
@@ -182,9 +197,7 @@ sequenceVideo.addEventListener("click", () => {
   togglePlayback();
 });
 playbackButton.addEventListener("click", togglePlayback);
-skipButton.addEventListener("click", () => {
-  showScenario(0);
-});
+skipButton.addEventListener("click", () => showScenario(0));
 scenarioDots.forEach((dot) => {
   dot.addEventListener("click", () => showScenario(Number(dot.dataset.idx)));
 });
@@ -195,15 +208,12 @@ function handleScenarioStep(direction, absDelta = 0) {
 
   if (direction > 0) {
     closeAccum = 0;
-    if (canvasIndex < TOTAL_CANVAS_SLIDES - 1) {
-      showScenario(canvasIndex + 1);
-    }
+    if (canvasIndex < TOTAL_CANVAS_SLIDES - 1) showScenario(canvasIndex + 1);
   } else if (direction < 0) {
     if (canvasIndex > 0) {
       closeAccum = 0;
       showScenario(canvasIndex - 1);
     } else {
-      // 0번 슬라이드에서 위로 스크롤 시 백버튼과 동일한 닫기 이벤트 실행 (300px 가상 스페이서 누적)
       closeAccum += absDelta;
       window.clearTimeout(closeResetTimer);
       closeResetTimer = window.setTimeout(() => { closeAccum = 0; }, 400);
@@ -237,9 +247,7 @@ volumeControl.addEventListener("mouseleave", closeVolumeLater);
 volumeControl.addEventListener("focusin", openVolume);
 volumeControl.addEventListener("focusout", closeVolumeLater);
 
-volumeButton.addEventListener("click", () => {
-  setMuted(!sequenceVideo.muted);
-});
+volumeButton.addEventListener("click", () => setMuted(!sequenceVideo.muted));
 volumeSlider.addEventListener("input", () => {
   volume = Number(volumeSlider.value);
   sequenceVideo.volume = volume;
@@ -254,14 +262,11 @@ document.addEventListener("pointerdown", (event) => {
 }, { capture: true });
 
 updateVolume();
-const introSource = "Asset/Playbook/playbook_3_intro.mp4";
 sequenceVideo.volume = volume;
-resetExperience();
+resetExperience(); // 초기 로드: src 세팅 + load() → 버퍼링 시작
 
 startOverlay.addEventListener("click", () => {
   startOverlay.classList.add("exiting");
-  window.setTimeout(() => {
-    startOverlay.hidden = true;
-  }, 380);
-  playVideo(introSource, { prepared: true });
+  window.setTimeout(() => { startOverlay.hidden = true; }, 380);
+  playVideo(introSource, { prepared: true }); // 이미 버퍼링된 소스 그대로 play()
 });
