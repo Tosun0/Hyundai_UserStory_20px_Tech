@@ -138,29 +138,24 @@ function resetExperience() {
   playbackButton.classList.remove("visible");
   volumeControl.hidden = true;
   startOverlay.hidden = false;
-  startOverlay.classList.remove("exiting");
+  startOverlay.classList.remove("exiting", "returning", "ready");
 }
 
 // 캔버스 닫기용 — src/load 없이 UI만 리셋 (깜빡임 방지)
-function softResetUI() {
+function finishScenarioExit() {
   scrollRouter?.reset();
   state = "intro";
   canvasIndex = 0;
   closeAccum = 0;
   sequenceVideo.pause();
-  try { sequenceVideo.currentTime = 0; } catch {}
   // src는 이미 세팅돼 있으니 건드리지 않음 — load() 재호출 없음
   sequenceVideo.hidden = false;
   sequenceVideo.classList.remove("leaving");
-  scenarioHeader.classList.remove("active");
-  scenarioStage.classList.remove("active");
-  backButton.hidden = true;
   skipButton.hidden = true;
   playbackButton.hidden = true;
   playbackButton.classList.remove("visible");
   volumeControl.hidden = true;
-  startOverlay.hidden = false;
-  startOverlay.classList.remove("exiting");
+  startOverlay.classList.add("ready");
 }
 
 function exitScenarioToPlaybook() {
@@ -168,16 +163,16 @@ function exitScenarioToPlaybook() {
   scenarioHeader.classList.remove("active");
   scenarioStage.classList.remove("active");
   backButton.hidden = true;
+  sequenceVideo.pause();
+  startOverlay.classList.remove("exiting", "ready");
+  startOverlay.classList.add("returning");
+  startOverlay.hidden = false;
 
   // 2. 캔버스 CSS transition 520ms 동안 휠 차단
   const exitBlocker = (e) => e.preventDefault();
   document.addEventListener("wheel", exitBlocker, { capture: true, passive: false });
   window.setTimeout(() => document.removeEventListener("wheel", exitBlocker, true), 600);
-
-  // 3. 캔버스가 완전히 사라진 뒤(540ms > 520ms)에 소프트 리셋
-  //    → src/load 재호출 없으니 검은 프레임 깜빡임 없음
-  //    → src는 이미 세팅돼 있으니 다음 startOverlay 클릭 시 prepared:true로 정상 재생됨
-  window.setTimeout(softResetUI, 540);
+  window.setTimeout(finishScenarioExit, 540);
 }
 
 sequenceVideo.addEventListener("ended", () => {
@@ -267,6 +262,11 @@ resetExperience(); // 초기 로드: src 세팅 + load() → 버퍼링 시작
 
 startOverlay.addEventListener("click", () => {
   startOverlay.classList.add("exiting");
-  window.setTimeout(() => { startOverlay.hidden = true; }, 380);
+  startOverlay.classList.remove("ready", "returning");
+  try { sequenceVideo.currentTime = 0; } catch {}
+  window.setTimeout(() => {
+    startOverlay.hidden = true;
+    startOverlay.classList.remove("exiting");
+  }, 380);
   playVideo(introSource, { prepared: true }); // 이미 버퍼링된 소스 그대로 play()
 });
