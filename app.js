@@ -15,8 +15,6 @@ const indicatorCounter = document.querySelector("#indicator-counter");
 const backButton = document.querySelector("#back-button");
 const storedVolume = Number(sessionStorage.getItem("media-volume") ?? "1");
 const TOTAL_CANVAS_SLIDES = 5;
-const introSource = "Asset/Playbook/playbook_3_intro.mp4";
-
 let state = "intro";
 let canvasIndex = 0;
 let scrollRouter;
@@ -34,15 +32,17 @@ function updateVolume() {
 }
 
 function setMuted(muted) {
-  sequenceVideo.defaultMuted = muted;
-  sequenceVideo.muted = muted;
-  sequenceVideo.toggleAttribute("muted", muted);
+  [sequenceVideo].forEach((media) => {
+    media.defaultMuted = muted;
+    media.muted = muted;
+    media.toggleAttribute("muted", muted);
+  });
   updateVolume();
 }
 
 function updatePlayback({ autoplay = false } = {}) {
   window.clearTimeout(hidePlaybackTimer);
-  if (sequenceVideo.hidden || state === "scenario") {
+  if (state === "scenario" || sequenceVideo.hidden) {
     playbackButton.hidden = true;
     playbackButton.classList.remove("visible");
     return;
@@ -59,7 +59,7 @@ function updatePlayback({ autoplay = false } = {}) {
 }
 
 function togglePlayback() {
-  if (sequenceVideo.hidden || state === "scenario") return;
+  if (sequenceVideo.hidden) return;
   if (sequenceVideo.paused) {
     sequenceVideo.play().catch(() => updatePlayback());
   } else {
@@ -73,33 +73,24 @@ async function playVideo(source, { prepared = false } = {}) {
   backButton.hidden = true;
   sequenceVideo.hidden = false;
   sequenceVideo.classList.remove("leaving");
-  skipButton.hidden = state !== "intro";
+  skipButton.hidden = !(state === "intro");
   volumeControl.hidden = false;
   sequenceVideo.volume = volume;
-
-  if (!prepared || !sequenceVideo.src || sequenceVideo.readyState === 0) {
+  setMuted(false);
+  if (!prepared) {
     sequenceVideo.src = source;
-    try { sequenceVideo.load(); } catch {}
+    sequenceVideo.load();
   }
-
   autoplaying = true;
   updatePlayback({ autoplay: true });
 
-  // 1차 시도: 음소거 해제 상태로 재생 시도
-  setMuted(false);
   try {
     await sequenceVideo.play();
-  } catch (err) {
-    console.warn("Unmuted play failed, falling back to muted play:", err);
-    // 2차 시도: 음소거 상태로 재생 시도 (브라우저 자동재생 정책 방어)
+  } catch {
     setMuted(true);
-    try {
-      await sequenceVideo.play();
-    } catch (e) {
-      console.error("Muted play failed as well:", e);
-    }
+    const playing = await sequenceVideo.play().then(() => true, () => false);
+    if (!playing) updatePlayback();
   }
-  updatePlayback();
 }
 
 function showScenario(index = 0) {
@@ -148,9 +139,7 @@ function resetExperience() {
 }
 
 sequenceVideo.addEventListener("ended", () => {
-  if (state === "intro") {
-    showScenario(0);
-  }
+  if (state === "intro" && startOverlay.hidden) showScenario(0);
 });
 sequenceVideo.addEventListener("play", () => {
   updatePlayback({ autoplay: autoplaying });
@@ -174,7 +163,6 @@ scenarioDots.forEach((dot) => {
 });
 backButton.addEventListener("click", () => {
   resetExperience();
-  // 닫힘 트랜지션(520ms) 동안 wheel 차단
   const exitBlocker = (e) => e.preventDefault();
   document.addEventListener("wheel", exitBlocker, { capture: true, passive: false });
   window.setTimeout(() => document.removeEventListener("wheel", exitBlocker, true), 560);
@@ -223,6 +211,7 @@ document.addEventListener("pointerdown", (event) => {
 }, { capture: true });
 
 updateVolume();
+const introSource = "Asset/Playbook/playbook_3_intro.mp4";
 sequenceVideo.volume = volume;
 resetExperience();
 
