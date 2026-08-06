@@ -150,7 +150,7 @@ function skipVideo() {
   fadeOutVideo(() => {
     videoExitPending = false;
     finishVideo(true);
-  }, 420);
+  }, VIDEO_FADE_DURATION);
 }
 
 function moveScenario(direction) {
