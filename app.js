@@ -153,15 +153,16 @@ function exitScenarioToPlaybook() {
   scenarioStage.classList.remove("active");
   backButton.hidden = true;
 
-  // 2. 닫히는 560ms 동안 휠 스크롤 차단
+  // 2. 캔버스 CSS transition이 520ms — 그 동안 휠 스크롤 차단
   const exitBlocker = (e) => e.preventDefault();
   document.addEventListener("wheel", exitBlocker, { capture: true, passive: false });
-  window.setTimeout(() => document.removeEventListener("wheel", exitBlocker, true), 560);
+  window.setTimeout(() => document.removeEventListener("wheel", exitBlocker, true), 600);
 
-  // 3. 캔버스가 스무스하게 페이드아웃된 후(360ms) currentTime = 0 및 startOverlay 등장 (video.load() 제거로 검은 프레임 튀는 깜빡임 제거)
+  // 3. 캔버스 opacity 전환이 완전히 끝난 뒤(540ms > 520ms)에 비디오 seek + startOverlay 등장.
+  //    360ms에 실행하면 canvas가 아직 31% 불투명할 때 seek 프레임이 비쳐서 깜빡임 발생.
   window.setTimeout(() => {
     resetExperience();
-  }, 360);
+  }, 540);
 }
 
 sequenceVideo.addEventListener("ended", () => {
