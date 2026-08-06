@@ -15,7 +15,7 @@ const indicatorCounter = document.querySelector("#indicator-counter");
 const backButton = document.querySelector("#back-button");
 const storedVolume = Number(sessionStorage.getItem("media-volume") ?? "1");
 const TOTAL_CANVAS_SLIDES = 5;
-const introSource = "Asset/Playbook/playbook_3_intro.mp4";
+const introSource = "Asset/Playbook/playbook_3_intro_.mp4";
 
 let closeAccum = 0;
 let closeResetTimer;
