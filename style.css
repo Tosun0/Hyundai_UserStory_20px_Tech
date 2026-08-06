@@ -1,74 +1,378 @@
-/* ──────────────────────────────────────────────
-   Hyundai UserStory 20px-Tech
-   16px_Ref 방식: 네이티브 스크롤 + scroll-snap
-   wheel 이벤트 JS 처리 없음
-   ────────────────────────────────────────────── */
-
 :root {
+  color-scheme: dark;
   font-family: Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif;
-  color: #292929;
-  background: #e8e7e4;
+  background: #000;
 }
 
 * {
   box-sizing: border-box;
 }
 
-button {
+button,
+label {
   font: inherit;
 }
 
-/* ── body: 스크롤 허용 (16px_Ref 방식) ── */
 html,
-body {
-  margin: 0;
-  min-width: 320px;
+body,
+.sequence-root {
+  width: 100%;
   height: 100%;
-  background:
-    radial-gradient(circle at 50% 18%, rgb(255 255 255 / .72), transparent 38%),
-    #e8e7e4;
+  margin: 0;
+  overflow: hidden;
+  background: #000;
 }
 
-/* ── 인디케이터 색상 토큰 ── */
-body[data-indicator-tone="white"] {
-  --indicator-background: rgb(255 255 255 / .88);
-  --indicator-border: rgb(0 0 0 / .08);
-  --indicator-shadow: 0 8px 24px rgb(15 23 42 / .12);
-  --indicator-dot: rgb(15 23 42 / .25);
-  --indicator-dot-active: #0f172a;
-  --indicator-text: #0f172a;
+.sequence-root {
+  position: relative;
 }
 
-body[data-indicator-tone="dark"] {
-  --indicator-background: rgb(255 255 255 / .08);
-  --indicator-border: rgb(255 255 255 / .1);
-  --indicator-shadow: 0 4px 20px rgb(0 0 0 / .25);
-  --indicator-dot: rgb(255 255 255 / .25);
-  --indicator-dot-active: #fff;
-  --indicator-text: rgb(255 255 255 / .7);
+#sequence-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+  z-index: 1;
+  object-fit: cover;
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity 420ms ease;
 }
 
-/* ── 스크롤 컨테이너: scroll-snap ── */
-.scroll-root {
-  height: 100dvh;
-  overflow-y: scroll;
-  scroll-snap-type: y mandatory;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
+#sequence-video.leaving {
+  opacity: 0;
 }
 
-.scroll-root::-webkit-scrollbar {
-  display: none;
+.start-overlay {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  border: 0;
+  background: rgb(0 0 0 / .5);
+  color: #fff;
+  font-family: Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif;
+  cursor: pointer;
+  opacity: 0;
+  animation: start-guide-dim 420ms ease-out 120ms forwards;
 }
 
-/* ── 각 섹션: 1뷰포트 = 1슬라이드 ── */
-.scroll-section {
-  height: 100dvh;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
+.start-overlay.exiting {
+  pointer-events: none;
+  animation: start-guide-exit 380ms ease forwards;
 }
 
-/* ── 헤더 ── */
+.start-guide-content {
+  display: flex;
+  align-items: center;
+  min-width: 300px;
+  gap: 18px;
+  padding: 18px 26px 18px 20px;
+  border: 1px solid rgb(255 255 255 / .22);
+  border-radius: 999px;
+  background: rgb(20 20 20 / .58);
+  box-shadow:
+    0 18px 48px rgb(0 0 0 / .3),
+    inset 0 1px rgb(255 255 255 / .08);
+  opacity: 0;
+  translate: 0 16px;
+  scale: .96;
+  backdrop-filter: blur(14px);
+  animation: start-guide-enter 620ms cubic-bezier(.16, .84, .3, 1) 260ms forwards;
+}
+
+.start-overlay.exiting .start-guide-content {
+  opacity: 0;
+  translate: 0 -8px;
+  scale: .98;
+  transition: opacity 180ms ease, translate 280ms ease, scale 280ms ease;
+}
+
+.start-guide-motion {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid rgb(255 255 255 / .7);
+  border-radius: 50%;
+}
+
+.start-guide-motion::before {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 18px rgb(255 255 255 / .65);
+  content: "";
+  animation: start-guide-press 1.35s ease-in-out 900ms infinite;
+}
+
+.start-guide-motion::after {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 1px solid rgb(255 255 255 / .7);
+  border-radius: 50%;
+  content: "";
+  animation: start-guide-ripple 1.35s ease-out 900ms infinite;
+}
+
+.start-guide-copy {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+}
+
+.start-guide-copy strong {
+  font-size: clamp(18px, 1.7vw, 28px);
+  line-height: 1.1;
+  letter-spacing: -.04em;
+}
+
+.start-guide-copy small {
+  color: rgb(255 255 255 / .58);
+  font-size: clamp(11px, .85vw, 14px);
+  font-weight: 500;
+  letter-spacing: -.025em;
+}
+
+@keyframes start-guide-dim {
+  to { opacity: 1; }
+}
+
+@keyframes start-guide-enter {
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+
+@keyframes start-guide-exit {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes start-guide-press {
+  45% { scale: .72; }
+}
+
+@keyframes start-guide-ripple {
+  0% {
+    opacity: 0;
+    scale: .45;
+  }
+
+  35% { opacity: .8; }
+
+  100% {
+    opacity: 0;
+    scale: 1.9;
+  }
+}
+
+.media-playback-button {
+  position: fixed;
+  z-index: 100;
+  top: 50%;
+  left: 50%;
+  width: 76px;
+  height: 76px;
+  padding: 0 0 0 4px;
+  border: 0;
+  outline: 0;
+  border-radius: 50%;
+  background: rgb(0 0 0 / .46);
+  color: #fff;
+  font-size: 30px;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: opacity 180ms ease;
+  backdrop-filter: blur(12px);
+}
+
+.media-skip-button {
+  position: fixed;
+  z-index: 100;
+  top: 28px;
+  right: 28px;
+  min-width: 74px;
+  height: 42px;
+  padding: 0 20px;
+  border: 1px solid rgb(255 255 255 / .2);
+  border-radius: 999px;
+  background: rgb(0 0 0 / .46);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgb(0 0 0 / .18);
+  backdrop-filter: blur(12px);
+  animation: media-skip-enter 260ms ease-out both;
+}
+
+.media-skip-button:hover {
+  background: rgb(0 0 0 / .62);
+}
+
+.media-skip-button:active {
+  scale: .96;
+}
+
+@keyframes media-skip-enter {
+  from {
+    opacity: 0;
+    translate: 0 -8px;
+  }
+}
+
+.media-playback-button.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.media-volume-control {
+  position: fixed;
+  z-index: 100;
+  right: 28px;
+  bottom: 28px;
+  width: 58px;
+  height: 58px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(0 0 0 / .5);
+  transition: height 260ms ease 100ms;
+  backdrop-filter: blur(12px);
+}
+
+.media-volume-button {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 58px;
+  height: 58px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.media-volume-slider {
+  position: absolute;
+  top: 18px;
+  left: 15px;
+  width: 28px;
+  height: 126px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  writing-mode: vertical-lr;
+  direction: rtl;
+  transition: opacity 90ms ease;
+  accent-color: #fff;
+}
+
+.media-volume-control.open {
+  height: 202px;
+  transition-delay: 0ms;
+}
+
+.media-volume-control.open .media-volume-slider {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 120ms ease 260ms;
+}
+
+@media (max-width: 600px) {
+  .start-guide-content {
+    min-width: 0;
+    gap: 13px;
+    max-width: calc(100vw - 32px);
+    padding: 14px 20px 14px 14px;
+  }
+
+  .start-guide-motion {
+    width: 40px;
+    height: 40px;
+  }
+
+  .start-guide-copy strong {
+    font-size: 17px;
+  }
+
+  .start-guide-copy small {
+    font-size: 11px;
+  }
+
+  .media-playback-button {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+
+  .media-skip-button {
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+    min-width: 66px;
+    height: 38px;
+    padding: 0 16px;
+    font-size: 12px;
+  }
+
+  .media-volume-control {
+    right: max(6px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    width: 48px;
+    height: 48px;
+  }
+
+  .media-volume-button {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .start-overlay,
+  .start-guide-content,
+  .start-guide-motion::before,
+  .start-guide-motion::after {
+    animation: none;
+  }
+
+  .start-overlay,
+  .start-guide-content {
+    opacity: 1;
+    translate: none;
+    scale: 1;
+  }
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* Scenario Canvas: Universal white-tone layout */
 .top-center-header {
   position: fixed;
   z-index: 500;
@@ -76,6 +380,7 @@ body[data-indicator-tone="dark"] {
   left: 50%;
   width: 327px;
   max-width: 90vw;
+  height: 42.6667px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -84,15 +389,17 @@ body[data-indicator-tone="dark"] {
   border-radius: 24px;
   background: rgb(255 255 255 / .9);
   box-shadow: 0 8px 24px rgb(0 0 0 / .16);
+  opacity: 0;
+  visibility: hidden;
   transform: translateX(-50%);
+  transition: opacity 420ms ease, visibility 420ms;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  transition: opacity 400ms ease;
 }
 
-body[data-phase="scenario-canvas"] .top-center-header {
-  opacity: 0;
-  pointer-events: none;
+.top-center-header.active {
+  opacity: 1;
+  visibility: visible;
 }
 
 .header-title {
@@ -105,92 +412,103 @@ body[data-phase="scenario-canvas"] .top-center-header {
   white-space: nowrap;
 }
 
-/* ── 플레이북 시퀀스 ── */
-.playbook-sequence {
+.back-nav-btn {
+  position: fixed;
+  z-index: 600;
+  top: clamp(18px, 2.96vh, 32px);
+  left: clamp(14px, 2.3vw, 44px);
+  width: clamp(40px, 3.86vw, 74px);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 200ms ease;
+}
+
+.back-nav-btn:hover {
+  transform: scale(1.05);
+}
+
+.back-nav-btn img {
+  width: 100%;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.scenario-canvas-stage {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  overflow: hidden;
+  background: rgb(232 231 228 / .45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 520ms ease, visibility 520ms;
+}
+
+.scenario-canvas-stage.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.canvas-viewport,
+.canvas-track,
+.canvas-slide {
   width: 100%;
   height: 100%;
+}
+
+.canvas-viewport {
+  overflow: hidden;
+}
+
+.canvas-track {
+  display: flex;
+  transition: transform 600ms cubic-bezier(.16, 1, .3, 1);
+}
+
+.canvas-slide {
+  flex: 0 0 100%;
   display: grid;
   place-items: center;
 }
 
-.playbook-preview {
-  width: min(86vw, 1280px);
-  height: min(68vh, 720px);
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+.canvas-slide img {
+  width: 90%;
+  height: auto;
+  max-height: 80%;
+  object-fit: contain;
+  user-select: none;
+  transition: opacity 620ms ease, transform 720ms cubic-bezier(.16, 1, .3, 1);
 }
 
-.preview-panel {
-  display: grid;
-  place-content: center;
-  gap: 10px;
-  border-radius: 26px;
-  background: rgb(255 255 255 / .42);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .6);
-  text-align: center;
+.scenario-canvas-stage:not(.active) .canvas-slide img {
+  opacity: 0;
+  transform: translateY(20px) scale(.985);
 }
 
-.preview-panel span {
-  color: rgb(41 41 41 / .42);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .14em;
-}
-
-.preview-panel strong {
-  font-size: clamp(22px, 2.6vw, 42px);
-}
-
-/* ── 캔버스 섹션 ── */
-.canvas-section {
-  display: grid;
-  place-items: center;
-  background:
-    radial-gradient(circle at 50% 18%, rgb(255 255 255 / .68), transparent 40%),
-    rgb(232 231 228 / .88);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-}
-
-.canvas-frame {
-  width: 90vw;
-  max-height: 80vh;
-  aspect-ratio: 16 / 9;
-  display: grid;
-  place-items: center;
-  border-radius: 16px;
-  background: rgb(255 255 255 / .44);
-  box-shadow: 0 8px 40px rgb(0 0 0 / .1);
-  color: rgb(41 41 41 / .5);
-  font-size: clamp(18px, 2.4vw, 36px);
-  font-weight: 700;
-  letter-spacing: .08em;
-}
-
-/* ── 고정 인디케이터 (캔버스 구간) ── */
-.canvas-indicator-bar {
-  position: fixed;
-  z-index: 200;
+.canvas-bottom-controls {
+  position: absolute;
+  z-index: 20;
   bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
+}
+
+.canvas-pagination {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 8px 18px;
-  border: 1px solid var(--indicator-border);
+  border: 1px solid rgb(0 0 0 / .08);
   border-radius: 20px;
-  background: var(--indicator-background);
-  box-shadow: var(--indicator-shadow);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 400ms ease;
-}
-
-body[data-phase="scenario-canvas"] .canvas-indicator-bar {
-  opacity: 1;
-  pointer-events: auto;
+  background: rgb(255 255 255 / .88);
+  box-shadow: 0 8px 24px rgb(15 23 42 / .12);
 }
 
 .pagination-dots {
@@ -204,18 +522,18 @@ body[data-phase="scenario-canvas"] .canvas-indicator-bar {
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: var(--indicator-dot);
+  background: rgb(15 23 42 / .25);
   cursor: pointer;
   transition: background-color 300ms ease, transform 300ms ease;
 }
 
 .p-dot.active {
-  background: var(--indicator-dot-active);
+  background: #0f172a;
   transform: scale(1.2);
 }
 
 .pagination-text {
-  color: var(--indicator-text);
+  color: #0f172a;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 13px;
   font-weight: 800;
@@ -223,54 +541,11 @@ body[data-phase="scenario-canvas"] .canvas-indicator-bar {
   font-variant-numeric: tabular-nums;
 }
 
-/* ── 플로우 가이드 ── */
-.flow-guide {
-  position: fixed;
-  z-index: 600;
-  right: 24px;
-  bottom: 18px;
-  margin: 0;
-  color: rgb(41 41 41 / .36);
-  font-size: 12px;
-  font-weight: 600;
-  pointer-events: none;
-  transition: opacity 400ms ease;
-}
-
-body[data-phase="scenario-canvas"] .flow-guide {
-  opacity: 0;
-}
-
-/* ── 반응형 ── */
-@media (max-width: 760px) and (orientation: portrait) {
-  .playbook-preview {
-    width: calc(100vw - 24px);
-    height: calc(100dvh - 180px);
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-    margin-top: 88px;
-  }
-
-  .preview-panel {
-    border-radius: 18px;
-  }
-
-  .canvas-frame {
-    width: 90vw;
-  }
-
-  .flow-guide {
-    right: 14px;
-    bottom: max(12px, env(safe-area-inset-bottom));
-    font-size: 10px;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .top-center-header,
-  .canvas-indicator-bar,
-  .flow-guide,
+  .scenario-canvas-stage,
+  .canvas-track,
+  .canvas-slide img,
   .p-dot {
     transition: none;
   }

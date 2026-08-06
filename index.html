@@ -4,67 +4,66 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>GN8 내 차도 되나?</title>
-  <meta name="description" content="Hyundai UserStory 인터랙티브 플레이북 (Tech 버전)">
-  <link rel="stylesheet" href="style.css?v=20260806-tech-r2">
+  <meta name="description" content="Hyundai UserStory 인터랙티브 플레이북">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="GN8 내 차도 되나? - Hyundai UserStory">
+  <meta property="og:description" content="Hyundai UserStory 인터랙티브 플레이북">
+  <meta property="og:url" content="https://userstorygn803.vercel.app/">
+  <link rel="stylesheet" href="style.css?v=20260806-tech-r3">
 </head>
-<!--
-  16px_Ref 방식: body overflow 허용 + scroll-snap.
-  wheel 이벤트를 건드리지 않으므로 macOS 트랙패드 관성도 브라우저가 처리한다.
--->
-<body data-phase="playbook" data-indicator-tone="white">
+<body>
+  <main class="sequence-root">
+    <video id="sequence-video" playsinline preload="auto"></video>
+  </main>
 
-  <header class="top-center-header">
-    <h1 class="header-title">Hyundai UserStory</h1>
+  <header id="scenario-header" class="top-center-header">
+    <h1 class="header-title">GN8 내 차도 되나?</h1>
   </header>
 
-  <!-- ── 스크롤 컨테이너 ── -->
-  <div class="scroll-root">
+  <button id="back-button" class="back-nav-btn" type="button" aria-label="플레이북 처음으로 돌아가기" hidden>
+    <img src="Asset/Playbook/_Button/BT_Back.svg" alt="뒤로가기" draggable="false">
+  </button>
 
-    <!-- 슬롯 1: 플레이북 -->
-    <section class="scroll-section" id="section-playbook">
-      <main class="playbook-sequence" aria-label="플레이북 시퀀스">
-        <div class="playbook-preview">
-          <article class="preview-panel">
-            <span>PLAYBOOK</span>
-            <strong>LEFT CONTENT</strong>
-          </article>
-          <article class="preview-panel">
-            <span>PLAYBOOK</span>
-            <strong>RIGHT CONTENT</strong>
-          </article>
-        </div>
-      </main>
-    </section>
-
-    <!-- 슬롯 2~5: 시나리오 캔버스 (각 슬라이드가 1뷰포트 높이 차지) -->
-    <section class="scroll-section canvas-section" id="section-canvas-0" data-canvas-index="0">
-      <div class="canvas-frame">SCENARIO CANVAS 01</div>
-    </section>
-    <section class="scroll-section canvas-section" id="section-canvas-1" data-canvas-index="1">
-      <div class="canvas-frame">SCENARIO CANVAS 02</div>
-    </section>
-    <section class="scroll-section canvas-section" id="section-canvas-2" data-canvas-index="2">
-      <div class="canvas-frame">SCENARIO CANVAS 03</div>
-    </section>
-    <section class="scroll-section canvas-section" id="section-canvas-3" data-canvas-index="3">
-      <div class="canvas-frame">SCENARIO CANVAS 04</div>
-    </section>
-
-  </div>
-
-  <!-- ── 고정 인디케이터 (캔버스 구간에서만 표시) ── -->
-  <div id="canvas-indicator" class="canvas-indicator-bar" aria-label="시나리오 캔버스 페이지">
-    <div class="pagination-dots">
-      <button class="p-dot active" type="button" data-idx="0" aria-label="1페이지"></button>
-      <button class="p-dot" type="button" data-idx="1" aria-label="2페이지"></button>
-      <button class="p-dot" type="button" data-idx="2" aria-label="3페이지"></button>
-      <button class="p-dot" type="button" data-idx="3" aria-label="4페이지"></button>
+  <section id="scenario-canvas-stage" class="scenario-canvas-stage" aria-label="시나리오 캔버스">
+    <div class="canvas-viewport">
+      <div id="scenario-canvas-track" class="canvas-track">
+        <div class="canvas-slide active"><img src="Asset/ScenarioCanvas/3_ScenarioCanvas_01.jpg" alt="시나리오 캔버스 1" draggable="false"></div>
+        <div class="canvas-slide"><img src="Asset/ScenarioCanvas/3_ScenarioCanvas_02.jpg" alt="시나리오 캔버스 2" draggable="false"></div>
+        <div class="canvas-slide"><img src="Asset/ScenarioCanvas/3_ScenarioCanvas_03.jpg" alt="시나리오 캔버스 3" draggable="false"></div>
+        <div class="canvas-slide"><img src="Asset/ScenarioCanvas/3_ScenarioCanvas_04.jpg" alt="시나리오 캔버스 4" draggable="false"></div>
+        <div class="canvas-slide"><img src="Asset/ScenarioCanvas/3_ScenarioCanvas_05.jpg" alt="시나리오 캔버스 5" draggable="false"></div>
+      </div>
     </div>
-    <span id="indicator-counter" class="pagination-text">01 / 04</span>
+    <div class="canvas-bottom-controls">
+      <div id="scenario-indicator" class="canvas-pagination" aria-label="시나리오 캔버스 페이지">
+        <div class="pagination-dots">
+          <button class="p-dot active" type="button" data-idx="0" aria-label="1페이지"></button>
+          <button class="p-dot" type="button" data-idx="1" aria-label="2페이지"></button>
+          <button class="p-dot" type="button" data-idx="2" aria-label="3페이지"></button>
+          <button class="p-dot" type="button" data-idx="3" aria-label="4페이지"></button>
+          <button class="p-dot" type="button" data-idx="4" aria-label="5페이지"></button>
+        </div>
+        <span id="indicator-counter" class="pagination-text">01 / 05</span>
+      </div>
+    </div>
+  </section>
+
+  <button id="start-overlay" class="start-overlay" type="button" aria-label="클릭하여 시작">
+    <span class="start-guide-content">
+      <span class="start-guide-motion" aria-hidden="true"></span>
+      <span class="start-guide-copy">
+        <strong>클릭하여 시작</strong>
+        <small>사운드와 함께 재생됩니다</small>
+      </span>
+    </span>
+  </button>
+  <button id="skip-button" class="media-skip-button" type="button" hidden>SKIP</button>
+  <button id="playback-button" class="media-playback-button" type="button" aria-label="재생" hidden>▶</button>
+  <div id="volume-control" class="media-volume-control">
+    <input id="volume-slider" class="media-volume-slider" type="range" min="0" max="1" step=".05" aria-label="볼륨">
+    <button id="volume-button" class="media-volume-button" type="button" aria-label="음소거">🔊</button>
   </div>
 
-  <p class="flow-guide">스크롤하여 시퀀스를 전환하세요</p>
-
-  <script src="app.js?v=20260806-tech-r2"></script>
+  <script type="module" src="app.js?v=20260806-tech-r3"></script>
 </body>
 </html>
