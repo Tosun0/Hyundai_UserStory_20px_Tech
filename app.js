@@ -8,13 +8,12 @@ const volumeControl = document.querySelector("#volume-control");
 const volumeButton = document.querySelector("#volume-button");
 const volumeSlider = document.querySelector("#volume-slider");
 const scenarioHeader = document.querySelector("#scenario-header");
-const scenarioStage = document.querySelector("#scenario-canvas-stage");
+const scenarioStage = document.querySelector("#scenario-canvas");
 const scenarioTrack = document.querySelector("#scenario-canvas-track");
 const scenarioDots = document.querySelectorAll("#scenario-indicator .p-dot");
 const indicatorCounter = document.querySelector("#indicator-counter");
-const storedVolume = Number(sessionStorage.getItem("media-volume") ?? "1");
 const TOTAL_CANVAS_SLIDES = 5;
-const introSource = "Asset/Playbook/playbook_video_3_intro.mp4";
+const introSource = "Asset/Playbook/playbook_3_intro_.mp4";
 const VIDEO_FADE_DURATION = 700;
 
 let closeAccum = 0;
@@ -30,7 +29,7 @@ let suppressVideoClickUntil = 0;
 let autoplaying = false;
 let videoFadeFrame;
 let videoExitPending = false;
-let volume = Number.isFinite(storedVolume) && storedVolume > 0 ? Math.min(1, storedVolume) : 1;
+let volume = 1;
 
 function cancelVideoFade({ restore = false } = {}) {
   window.cancelAnimationFrame(videoFadeFrame);
@@ -302,7 +301,6 @@ volumeButton.addEventListener("click", () => setMuted(!sequenceVideo.muted));
 volumeSlider.addEventListener("input", () => {
   volume = Number(volumeSlider.value);
   sequenceVideo.volume = volume;
-  sessionStorage.setItem("media-volume", String(volume));
   setMuted(volume === 0);
 });
 
