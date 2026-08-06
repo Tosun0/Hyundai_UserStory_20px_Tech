@@ -15,6 +15,11 @@ const indicatorCounter = document.querySelector("#indicator-counter");
 const backButton = document.querySelector("#back-button");
 const storedVolume = Number(sessionStorage.getItem("media-volume") ?? "1");
 const TOTAL_CANVAS_SLIDES = 5;
+
+let closeAccum = 0;
+let closeResetTimer;
+const CLOSE_THRESHOLD = 300;
+
 let state = "intro";
 let canvasIndex = 0;
 let scrollRouter;
@@ -122,6 +127,7 @@ function resetExperience() {
   scrollRouter?.reset();
   state = "intro";
   canvasIndex = 0;
+  closeAccum = 0;
   sequenceVideo.pause();
   sequenceVideo.src = introSource;
   sequenceVideo.load();
@@ -136,6 +142,13 @@ function resetExperience() {
   volumeControl.hidden = true;
   startOverlay.hidden = false;
   startOverlay.classList.remove("exiting");
+}
+
+function exitScenarioToPlaybook() {
+  resetExperience();
+  const exitBlocker = (e) => e.preventDefault();
+  document.addEventListener("wheel", exitBlocker, { capture: true, passive: false });
+  window.setTimeout(() => document.removeEventListener("wheel", exitBlocker, true), 560);
 }
 
 sequenceVideo.addEventListener("ended", () => {
@@ -161,16 +174,32 @@ skipButton.addEventListener("click", () => {
 scenarioDots.forEach((dot) => {
   dot.addEventListener("click", () => showScenario(Number(dot.dataset.idx)));
 });
-backButton.addEventListener("click", () => {
-  resetExperience();
-  const exitBlocker = (e) => e.preventDefault();
-  document.addEventListener("wheel", exitBlocker, { capture: true, passive: false });
-  window.setTimeout(() => document.removeEventListener("wheel", exitBlocker, true), 560);
-});
+backButton.addEventListener("click", exitScenarioToPlaybook);
 
-function handleScenarioStep(direction) {
+function handleScenarioStep(direction, absDelta = 0) {
   if (state !== "scenario") return false;
-  moveScenario(direction);
+
+  if (direction > 0) {
+    closeAccum = 0;
+    if (canvasIndex < TOTAL_CANVAS_SLIDES - 1) {
+      showScenario(canvasIndex + 1);
+    }
+  } else if (direction < 0) {
+    if (canvasIndex > 0) {
+      closeAccum = 0;
+      showScenario(canvasIndex - 1);
+    } else {
+      // 0번 슬라이드에서 위로 스크롤 시 백버튼과 동일한 닫기 이벤트 실행 (300px 가상 스페이서 누적)
+      closeAccum += absDelta;
+      window.clearTimeout(closeResetTimer);
+      closeResetTimer = window.setTimeout(() => { closeAccum = 0; }, 400);
+      if (closeAccum >= CLOSE_THRESHOLD) {
+        exitScenarioToPlaybook();
+        return true;
+      }
+      return "accumulate";
+    }
+  }
   return true;
 }
 
