@@ -215,8 +215,16 @@ function handleScenarioStep(direction, absDelta = 0) {
   return true;
 }
 
+function handleWheel(direction, absDelta) {
+  if (state === "intro" && !sequenceVideo.paused && direction > 0) {
+    showScenario(0);
+    return true;
+  }
+  return handleScenarioStep(direction, absDelta);
+}
+
 scrollRouter = initScrollRouter({
-  onWheel: handleScenarioStep,
+  onWheel: handleWheel,
   onSwipe: handleScenarioStep,
 });
 
