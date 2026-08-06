@@ -201,6 +201,7 @@ function finishScenarioExit() {
 }
 
 function exitScenarioToPlaybook() {
+  state = "returning";
   // 1. 시나리오 캔버스 페이드아웃 시작
   scenarioHeader.classList.remove("active");
   scenarioStage.classList.remove("active");
