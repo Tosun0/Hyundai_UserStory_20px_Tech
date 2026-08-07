@@ -189,17 +189,20 @@ function finishScenarioExit() {
   canvasIndex = 0;
   closeAccum = 0;
   if (sequenceVideo.paused) {
-    // 정상 플로우: exit 중 playVideo 호출 없음 → 초기 UI 리셋
+    // 정상 플로우: exit 중 playVideo 호출 없음 → 초기 UI 리셋 + 오버레이 복원
     sequenceVideo.hidden = false;
     sequenceVideo.classList.remove("leaving");
     skipButton.hidden = true;
     playbackButton.hidden = true;
     playbackButton.classList.remove("visible");
     volumeControl.hidden = true;
+    startOverlay.hidden = false; // hidden 속성 명시 해제 — ready CSS가 확실히 적용되도록
     startOverlay.classList.add("ready");
   } else {
-    // exit 중 playVideo가 이미 실행됨 → 영상 재생 유지, skip 버튼만 노출
-    skipButton.hidden = false;
+    // exit 중 playVideo가 이미 실행됨 → 영상 재생 유지
+    startOverlay.hidden = true; // 오버레이 완전 숨김 (exiting 애니메이션 잔여 처리)
+    startOverlay.classList.remove("exiting", "returning", "ready");
+    skipButton.hidden = false; // 스킵 버튼 노출 (state=intro에서 영상 재생 중)
   }
 }
 
