@@ -188,19 +188,22 @@ function finishScenarioExit() {
   state = "intro";
   canvasIndex = 0;
   closeAccum = 0;
-  sequenceVideo.pause();
-  // src는 이미 세팅돼 있으니 건드리지 않음 — load() 재호출 없음
-  sequenceVideo.hidden = false;
-  sequenceVideo.classList.remove("leaving");
-  skipButton.hidden = true;
-  playbackButton.hidden = true;
-  playbackButton.classList.remove("visible");
-  volumeControl.hidden = true;
-  startOverlay.classList.add("ready");
+  if (sequenceVideo.paused) {
+    // 정상 플로우: exit 중 playVideo 호출 없음 → 초기 UI 리셋
+    sequenceVideo.hidden = false;
+    sequenceVideo.classList.remove("leaving");
+    skipButton.hidden = true;
+    playbackButton.hidden = true;
+    playbackButton.classList.remove("visible");
+    volumeControl.hidden = true;
+    startOverlay.classList.add("ready");
+  } else {
+    // exit 중 playVideo가 이미 실행됨 → 영상 재생 유지, skip 버튼만 노출
+    skipButton.hidden = false;
+  }
 }
 
 function exitScenarioToPlaybook() {
-  console.log(`[exit] exitScenarioToPlaybook — videoExitPending=${videoExitPending} videoFadeFrame=${videoFadeFrame}`);
   state = "returning";
   // 1. 시나리오 캔버스 페이드아웃 시작
   scenarioHeader.classList.remove("active");
