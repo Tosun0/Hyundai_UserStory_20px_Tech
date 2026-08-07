@@ -146,11 +146,10 @@ function skipVideo() {
   if (videoExitPending) return;
   videoExitPending = true;
   skipButton.hidden = true;
-  showScenario(0, { keepVideoPlaying: true });
-  fadeOutVideo(() => {
-    videoExitPending = false;
-    sequenceVideo.pause();
-  }, VIDEO_FADE_DURATION);
+  cancelVideoFade({ restore: true }); // 진행 중인 fade 취소 및 볼륨 복원
+  sequenceVideo.pause();              // 즉시 정지
+  showScenario(0);                    // 캔버스 전환 (영상 이미 정지됨)
+  videoExitPending = false;
 }
 
 function moveScenario(direction) {
