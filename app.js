@@ -146,11 +146,10 @@ function skipVideo() {
   if (videoExitPending) return;
   videoExitPending = true;
   skipButton.hidden = true;
-  showScenario(0, { keepVideoPlaying: true });
-  fadeOutVideo(() => {
-    videoExitPending = false;
-    sequenceVideo.pause();
-  }, VIDEO_FADE_DURATION);
+  cancelVideoFade();
+  sequenceVideo.pause();
+  videoExitPending = false;
+  showScenario(0);
 }
 
 function moveScenario(direction) {
