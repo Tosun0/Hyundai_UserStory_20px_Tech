@@ -143,11 +143,13 @@ function finishVideo() {
 }
 
 function skipVideo() {
-  if (videoExitPending) return;
+  console.log(`[skip] videoExitPending=${videoExitPending} state=${state} paused=${sequenceVideo.paused}`);
+  if (videoExitPending) { console.warn('[skip] BLOCKED by videoExitPending'); return; }
   videoExitPending = true;
   skipButton.hidden = true;
   showScenario(0, { keepVideoPlaying: true });
   fadeOutVideo(() => {
+    console.log('[skip] fadeOut complete → pause');
     videoExitPending = false;
     sequenceVideo.pause();
   }, VIDEO_FADE_DURATION);
@@ -200,6 +202,7 @@ function finishScenarioExit() {
 }
 
 function exitScenarioToPlaybook() {
+  console.log(`[exit] exitScenarioToPlaybook — videoExitPending=${videoExitPending} videoFadeFrame=${videoFadeFrame}`);
   state = "returning";
   // 1. 시나리오 캔버스 페이드아웃 시작
   scenarioHeader.classList.remove("active");
@@ -228,6 +231,7 @@ sequenceVideo.addEventListener("play", () => {
   autoplaying = false;
 });
 sequenceVideo.addEventListener("pause", () => {
+  console.log(`[pause] currentTime=${sequenceVideo.currentTime?.toFixed(2)} duration=${sequenceVideo.duration?.toFixed(2)} videoFadeFrame=${videoFadeFrame} videoExitPending=${videoExitPending}`);
   if (sequenceVideo.currentTime < sequenceVideo.duration) cancelVideoFade({ restore: true });
   updatePlayback();
 });
