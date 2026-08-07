@@ -123,7 +123,7 @@ async function playVideo(source, { prepared = false } = {}) {
 function showScenario(index = 0, { keepVideoPlaying = false } = {}) {
   state = "scenario";
   canvasIndex = Math.max(0, Math.min(index, TOTAL_CANVAS_SLIDES - 1));
-  if (!keepVideoPlaying && !videoExitPending) sequenceVideo.pause(); // 페이드 진행 중엔 pause 생략 — 감쇠 유지
+  if (!keepVideoPlaying) sequenceVideo.pause();
   sequenceVideo.hidden = false;
   skipButton.hidden = true;
   playbackButton.hidden = true;
@@ -143,13 +143,11 @@ function finishVideo() {
 }
 
 function skipVideo() {
-  console.log(`[skip] videoExitPending=${videoExitPending} state=${state} paused=${sequenceVideo.paused}`);
-  if (videoExitPending) { console.warn('[skip] BLOCKED by videoExitPending'); return; }
+  if (videoExitPending) return;
   videoExitPending = true;
   skipButton.hidden = true;
   showScenario(0, { keepVideoPlaying: true });
   fadeOutVideo(() => {
-    console.log('[skip] fadeOut complete → pause');
     videoExitPending = false;
     sequenceVideo.pause();
   }, VIDEO_FADE_DURATION);
@@ -231,8 +229,15 @@ sequenceVideo.addEventListener("play", () => {
   autoplaying = false;
 });
 sequenceVideo.addEventListener("pause", () => {
-  console.log(`[pause] currentTime=${sequenceVideo.currentTime?.toFixed(2)} duration=${sequenceVideo.duration?.toFixed(2)} videoFadeFrame=${videoFadeFrame} videoExitPending=${videoExitPending}`);
-  if (sequenceVideo.currentTime < sequenceVideo.duration) cancelVideoFade({ restore: true });
+  if (videoExitPending) {
+    // 스킵 페이드 진행 중 외부 원인으로 pause 발생 — 페이드 즉시 완료 처리
+    window.cancelAnimationFrame(videoFadeFrame);
+    videoFadeFrame = undefined;
+    sequenceVideo.volume = 0;
+    videoExitPending = false;
+  } else if (sequenceVideo.currentTime < sequenceVideo.duration) {
+    cancelVideoFade({ restore: true });
+  }
   updatePlayback();
 });
 
@@ -250,7 +255,7 @@ scenarioDots.forEach((dot) => {
 });
 function handleScenarioStep(direction, absDelta = 0) {
   if (state !== "scenario") return false;
-  // videoExitPending 중에도 캔버스 스크롤 허용 — 스킵 fade는 백그라운드에서 계속 진행
+  if (videoExitPending) return true; // 스킵 페이드 중 캔버스 조작 차단 — exitScenarioToPlaybook 실행 방지
 
   if (direction > 0) {
     closeAccum = 0;
