@@ -123,7 +123,7 @@ async function playVideo(source, { prepared = false } = {}) {
 function showScenario(index = 0, { keepVideoPlaying = false } = {}) {
   state = "scenario";
   canvasIndex = Math.max(0, Math.min(index, TOTAL_CANVAS_SLIDES - 1));
-  if (!keepVideoPlaying) sequenceVideo.pause();
+  if (!keepVideoPlaying && !videoExitPending) sequenceVideo.pause(); // 페이드 진행 중엔 pause 생략 — 감쇠 유지
   sequenceVideo.hidden = false;
   skipButton.hidden = true;
   playbackButton.hidden = true;
@@ -246,7 +246,7 @@ scenarioDots.forEach((dot) => {
 });
 function handleScenarioStep(direction, absDelta = 0) {
   if (state !== "scenario") return false;
-  if (videoExitPending) return true;
+  // videoExitPending 중에도 캔버스 스크롤 허용 — 스킵 fade는 백그라운드에서 계속 진행
 
   if (direction > 0) {
     closeAccum = 0;
