@@ -1,5 +1,3 @@
-import { initScrollRouter } from "./scroll-router.js";
-
 const sequenceVideo = document.querySelector("#sequence-video");
 const startOverlay = document.querySelector("#start-overlay");
 const skipButton = document.querySelector("#skip-button");
@@ -16,13 +14,8 @@ const TOTAL_CANVAS_SLIDES = 5;
 const introSource = "Asset/Playbook/playbook_video_3_intro.mp4";
 const VIDEO_FADE_DURATION = 700;
 
-let closeAccum = 0;
-let closeResetTimer;
-const CLOSE_THRESHOLD = 300;
-
 let state = "intro";
 let canvasIndex = 0;
-let scrollRouter;
 let closeVolumeTimer;
 let hidePlaybackTimer;
 let suppressVideoClickUntil = 0;
@@ -120,17 +113,8 @@ async function playVideo(source, { prepared = false } = {}) {
   }
 }
 
-function showScenario(index = 0, { keepVideoPlaying = false } = {}) {
-  state = "scenario";
+function renderScenario(index) {
   canvasIndex = Math.max(0, Math.min(index, TOTAL_CANVAS_SLIDES - 1));
-  if (!keepVideoPlaying) sequenceVideo.pause();
-  sequenceVideo.hidden = false;
-  skipButton.hidden = true;
-  playbackButton.hidden = true;
-  volumeControl.hidden = true;
-  scenarioHeader.classList.add("active");
-  scenarioStage.classList.add("active");
-  scenarioTrack.style.transform = `translateX(-${canvasIndex * 100}%)`;
   scenarioTrack.querySelectorAll(".canvas-slide").forEach((slide, idx) => {
     slide.classList.toggle("active", idx === canvasIndex);
   });
@@ -138,8 +122,55 @@ function showScenario(index = 0, { keepVideoPlaying = false } = {}) {
   indicatorCounter.textContent = `${String(canvasIndex + 1).padStart(2, "0")} / 05`;
 }
 
+function scrollToScenario(index = 0) {
+  const maxScroll = Math.max(0, scenarioStage.offsetHeight - window.innerHeight);
+  const targetY = scenarioStage.offsetTop + (index / (TOTAL_CANVAS_SLIDES - 1)) * maxScroll;
+  window.scrollTo({ top: targetY, behavior: "smooth" });
+}
+
+function enterScenario() {
+  state = "scenario";
+  sequenceVideo.pause();
+  sequenceVideo.hidden = false;
+  skipButton.hidden = true;
+  playbackButton.hidden = true;
+  volumeControl.hidden = true;
+}
+
+function syncScenarioFromScroll() {
+  const sectionTop = scenarioStage.offsetTop;
+  const maxScroll = Math.max(0, scenarioStage.offsetHeight - window.innerHeight);
+  const relativeScroll = window.scrollY - sectionTop;
+  const inCanvas = relativeScroll >= 0 && relativeScroll <= maxScroll;
+
+  if (inCanvas) {
+    if (state !== "scenario") enterScenario();
+    const progress = maxScroll > 0 ? relativeScroll / maxScroll : 0;
+    const slideIndex = Math.min(
+      TOTAL_CANVAS_SLIDES - 1,
+      Math.floor(Math.max(0, Math.min(1, progress)) * TOTAL_CANVAS_SLIDES),
+    );
+    renderScenario(slideIndex);
+    scenarioHeader.classList.add("active");
+    return;
+  }
+
+  scenarioHeader.classList.remove("active");
+  if (state === "scenario" && relativeScroll < 0) {
+    state = "intro";
+    renderScenario(0);
+    sequenceVideo.hidden = false;
+    skipButton.hidden = true;
+    playbackButton.hidden = true;
+    volumeControl.hidden = true;
+    startOverlay.hidden = false;
+    startOverlay.classList.remove("exiting");
+    startOverlay.classList.add("ready");
+  }
+}
+
 function finishVideo() {
-  if (state === "intro" && startOverlay.hidden) showScenario(0);
+  if (state === "intro" && startOverlay.hidden) skipVideo();
 }
 
 function skipVideo() {
@@ -149,23 +180,15 @@ function skipVideo() {
   cancelVideoFade();
   sequenceVideo.pause();
   videoExitPending = false;
-  showScenario(0);
-}
-
-function moveScenario(direction) {
-  if (state !== "scenario") return;
-  if (direction > 0 && canvasIndex < TOTAL_CANVAS_SLIDES - 1) showScenario(canvasIndex + 1);
-  if (direction < 0 && canvasIndex > 0) showScenario(canvasIndex - 1);
+  scrollToScenario(0);
 }
 
 // 초기 로드용 — src 세팅 + load()로 버퍼링 시작
 function resetExperience() {
   cancelVideoFade({ restore: true });
   videoExitPending = false;
-  scrollRouter?.reset();
   state = "intro";
   canvasIndex = 0;
-  closeAccum = 0;
   sequenceVideo.pause();
   sequenceVideo.src = introSource;
   sequenceVideo.load();
@@ -179,47 +202,6 @@ function resetExperience() {
   volumeControl.hidden = true;
   startOverlay.hidden = false;
   startOverlay.classList.remove("exiting", "returning", "ready");
-}
-
-// 캔버스 닫기용 — src/load 없이 UI만 리셋 (깜빡임 방지)
-function finishScenarioExit() {
-  scrollRouter?.reset();
-  state = "intro";
-  canvasIndex = 0;
-  closeAccum = 0;
-  if (sequenceVideo.paused) {
-    // 정상 플로우: exit 중 playVideo 호출 없음 → 초기 UI 리셋 + 오버레이 복원
-    sequenceVideo.hidden = false;
-    sequenceVideo.classList.remove("leaving");
-    skipButton.hidden = true;
-    playbackButton.hidden = true;
-    playbackButton.classList.remove("visible");
-    volumeControl.hidden = true;
-    startOverlay.hidden = false; // hidden 속성 명시 해제 — ready CSS가 확실히 적용되도록
-    startOverlay.classList.add("ready");
-  } else {
-    // exit 중 playVideo가 이미 실행됨 → 영상 재생 유지
-    startOverlay.hidden = true; // 오버레이 완전 숨김 (exiting 애니메이션 잔여 처리)
-    startOverlay.classList.remove("exiting", "returning", "ready");
-    skipButton.hidden = false; // 스킵 버튼 노출 (state=intro에서 영상 재생 중)
-  }
-}
-
-function exitScenarioToPlaybook() {
-  state = "returning";
-  // 1. 시나리오 캔버스 페이드아웃 시작
-  scenarioHeader.classList.remove("active");
-  scenarioStage.classList.remove("active");
-  sequenceVideo.pause();
-  startOverlay.classList.remove("exiting", "ready");
-  startOverlay.classList.add("returning");
-  startOverlay.hidden = false;
-
-  // 2. 캔버스 CSS transition 520ms 동안 휠 차단
-  const exitBlocker = (e) => e.preventDefault();
-  document.addEventListener("wheel", exitBlocker, { capture: true, passive: false });
-  window.setTimeout(() => document.removeEventListener("wheel", exitBlocker, true), 600);
-  window.setTimeout(finishScenarioExit, 540);
 }
 
 sequenceVideo.addEventListener("timeupdate", () => {
@@ -256,45 +238,9 @@ sequenceVideo.addEventListener("click", () => {
 playbackButton.addEventListener("click", togglePlayback);
 skipButton.addEventListener("click", skipVideo);
 scenarioDots.forEach((dot) => {
-  dot.addEventListener("click", () => showScenario(Number(dot.dataset.idx)));
+  dot.addEventListener("click", () => scrollToScenario(Number(dot.dataset.idx)));
 });
-function handleScenarioStep(direction, absDelta = 0) {
-  if (state !== "scenario") return false;
-  if (videoExitPending) return true; // 스킵 페이드 중 캔버스 조작 차단 — exitScenarioToPlaybook 실행 방지
-
-  if (direction > 0) {
-    closeAccum = 0;
-    if (canvasIndex < TOTAL_CANVAS_SLIDES - 1) showScenario(canvasIndex + 1);
-  } else if (direction < 0) {
-    if (canvasIndex > 0) {
-      closeAccum = 0;
-      showScenario(canvasIndex - 1);
-    } else {
-      closeAccum += absDelta;
-      window.clearTimeout(closeResetTimer);
-      closeResetTimer = window.setTimeout(() => { closeAccum = 0; }, 400);
-      if (closeAccum >= CLOSE_THRESHOLD) {
-        exitScenarioToPlaybook();
-        return true;
-      }
-      return "accumulate";
-    }
-  }
-  return true;
-}
-
-function handleWheel(direction, absDelta) {
-  if (state === "intro" && !sequenceVideo.paused && direction > 0) {
-    skipVideo();
-    return true;
-  }
-  return handleScenarioStep(direction, absDelta);
-}
-
-scrollRouter = initScrollRouter({
-  onWheel: handleWheel,
-  onSwipe: handleScenarioStep,
-});
+window.addEventListener("scroll", syncScenarioFromScroll, { passive: true });
 
 function openVolume() {
   window.clearTimeout(closeVolumeTimer);
@@ -327,6 +273,8 @@ document.addEventListener("pointerdown", (event) => {
 updateVolume();
 sequenceVideo.volume = volume;
 resetExperience(); // 초기 로드: src 세팅 + load() → 버퍼링 시작
+renderScenario(0);
+syncScenarioFromScroll();
 
 startOverlay.addEventListener("click", () => {
   startOverlay.classList.add("exiting");
