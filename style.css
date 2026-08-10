@@ -21,6 +21,7 @@ body {
   overflow-x: clip;
   background: #000;
   scroll-behavior: smooth;
+  scroll-snap-type: y proximity;
 }
 
 .sequence-root {
@@ -30,6 +31,7 @@ body {
   min-height: 100vh;
   overflow: visible;
   background: #000;
+  scroll-snap-align: start;
 }
 
 #sequence-video {
@@ -80,6 +82,20 @@ body {
 .start-overlay.exiting {
   pointer-events: none;
   animation: start-guide-exit 380ms ease forwards;
+}
+
+.start-overlay.scroll-hidden {
+  pointer-events: none;
+  animation: none;
+  opacity: 0;
+  transition: opacity 360ms ease;
+}
+
+.start-overlay.scroll-visible {
+  pointer-events: auto;
+  animation: none;
+  opacity: 1;
+  transition: opacity 360ms ease;
 }
 
 .start-guide-content {
@@ -455,6 +471,7 @@ body {
   z-index: 1;
   height: calc(6 * 100vh);
   min-height: 600vh;
+  scroll-snap-align: start;
   overflow: visible;
   background: rgb(232 231 228 / .45);
   backdrop-filter: blur(12px);

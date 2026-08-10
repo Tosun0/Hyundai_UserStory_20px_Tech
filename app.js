@@ -16,6 +16,9 @@ const VIDEO_FADE_DURATION = 700;
 
 let state = "intro";
 let canvasIndex = 0;
+let previousScrollY = window.scrollY;
+let scrollDirection = 0;
+let scrollEndTimer;
 let closeVolumeTimer;
 let hidePlaybackTimer;
 let suppressVideoClickUntil = 0;
@@ -169,6 +172,47 @@ function syncScenarioFromScroll() {
   }
 }
 
+function hideStartGuide() {
+  if (startOverlay.hidden) return;
+  startOverlay.classList.remove("scroll-visible");
+  startOverlay.classList.add("scroll-hidden");
+}
+
+function showStartGuide() {
+  if (state !== "intro" || !sequenceVideo.paused) return;
+  startOverlay.hidden = false;
+  startOverlay.classList.remove("scroll-hidden");
+  startOverlay.classList.add("scroll-visible");
+}
+
+function snapToSectionBoundary(direction) {
+  if (!direction) return;
+  const scrollY = window.scrollY;
+  const threshold = Math.min(window.innerHeight * 0.65, 520);
+  const targets = [0, scenarioStage.offsetTop];
+  const nextTargets = targets
+    .filter((top) => direction > 0 ? top > scrollY : top < scrollY)
+    .sort((first, second) => direction > 0 ? first - second : second - first);
+  const target = nextTargets[0];
+  if (target === undefined || Math.abs(target - scrollY) > threshold) return;
+  window.scrollTo({ top: target, behavior: "smooth" });
+}
+
+function handlePageScroll() {
+  const currentScrollY = window.scrollY;
+  if (currentScrollY !== previousScrollY) {
+    scrollDirection = Math.sign(currentScrollY - previousScrollY);
+    previousScrollY = currentScrollY;
+  }
+  syncScenarioFromScroll();
+  if (scrollDirection > 0 && currentScrollY > 0) hideStartGuide();
+  if (scrollDirection < 0 && currentScrollY <= Math.min(window.innerHeight * 0.65, 520)) showStartGuide();
+
+  if ("onscrollend" in window) return;
+  window.clearTimeout(scrollEndTimer);
+  scrollEndTimer = window.setTimeout(() => snapToSectionBoundary(scrollDirection), 140);
+}
+
 function finishVideo() {
   if (state === "intro" && startOverlay.hidden) skipVideo();
 }
@@ -240,7 +284,10 @@ skipButton.addEventListener("click", skipVideo);
 scenarioDots.forEach((dot) => {
   dot.addEventListener("click", () => scrollToScenario(Number(dot.dataset.idx)));
 });
-window.addEventListener("scroll", syncScenarioFromScroll, { passive: true });
+window.addEventListener("scroll", handlePageScroll, { passive: true });
+if ("onscrollend" in window) {
+  window.addEventListener("scrollend", () => snapToSectionBoundary(scrollDirection), { passive: true });
+}
 
 function openVolume() {
   window.clearTimeout(closeVolumeTimer);
@@ -274,7 +321,7 @@ updateVolume();
 sequenceVideo.volume = volume;
 resetExperience(); // 초기 로드: src 세팅 + load() → 버퍼링 시작
 renderScenario(0);
-syncScenarioFromScroll();
+handlePageScroll();
 
 startOverlay.addEventListener("click", () => {
   startOverlay.classList.add("exiting");
