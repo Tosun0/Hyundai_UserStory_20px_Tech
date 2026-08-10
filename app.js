@@ -189,11 +189,18 @@ function snapToSectionBoundary(direction) {
   if (!direction) return;
   const scrollY = window.scrollY;
   const threshold = Math.min(window.innerHeight, 900);
-  const targets = [0, scenarioStage.offsetTop];
-  const nextTargets = targets
-    .filter((top) => direction > 0 ? top > scrollY : top < scrollY)
-    .sort((first, second) => direction > 0 ? first - second : second - first);
-  const target = nextTargets[0];
+  const scenarioTop = scenarioStage.offsetTop;
+  const firstCanvasPage = (scenarioStage.offsetHeight - window.innerHeight) / TOTAL_CANVAS_SLIDES;
+  let target;
+
+  if (direction < 0) {
+    const relativeScroll = scrollY - scenarioTop;
+    if (scrollY <= 0 || relativeScroll > firstCanvasPage * .5) return;
+    target = 0;
+  } else if (scrollY < scenarioTop && scenarioTop - scrollY <= threshold) {
+    target = scenarioTop;
+  }
+
   if (target === undefined || Math.abs(target - scrollY) > threshold) return;
   window.scrollTo({ top: target, behavior: "smooth" });
 }
