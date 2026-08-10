@@ -188,7 +188,7 @@ function showStartGuide() {
 function snapToSectionBoundary(direction) {
   if (!direction) return;
   const scrollY = window.scrollY;
-  const threshold = Math.min(window.innerHeight * 0.65, 520);
+  const threshold = Math.min(window.innerHeight, 900);
   const targets = [0, scenarioStage.offsetTop];
   const nextTargets = targets
     .filter((top) => direction > 0 ? top > scrollY : top < scrollY)
