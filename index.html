@@ -3,30 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="reset-scroll.js"></script>
   <title>GN8 내 차도 되나?</title>
   <meta name="description" content="Hyundai UserStory 인터랙티브 플레이북">
   <meta property="og:type" content="website">
   <meta property="og:title" content="GN8 내 차도 되나? - Hyundai UserStory">
   <meta property="og:description" content="Hyundai UserStory 인터랙티브 플레이북">
   <meta property="og:url" content="https://userstorygn803.vercel.app/">
-  <link rel="stylesheet" href="style.css?v=20260807-comply-r1">
+  <link rel="stylesheet" href="assets/style.css?v=20260807-comply-r1">
 </head>
 <body>
-  <main id="playbook" class="sequence-root" data-section="playbook">
-    <video id="sequence-video" playsinline preload="auto"></video>
-  </main>
+  <main>
+    <section id="playbook" class="page-section sequence-root">
+      <video id="sequence-video" playsinline preload="auto"></video>
+    </section>
 
   <div id="scenario-header" class="global-playbook-title">GN8 내 차도 되나?</div>
 
-  <section id="scenario-canvas" class="scenario-canvas-stage" data-section="canvas" aria-label="시나리오 캔버스">
+  <section id="scenario-canvas" class="page-section scenario-canvas-stage" aria-label="시나리오 캔버스">
     <div class="canvas-viewport">
       <div id="scenario-canvas-track" class="canvas-track">
-        <div class="canvas-slide active"><img src="Asset/ScenarioCanvas/3_ScenarioCanvas_01.jpg" alt="시나리오 캔버스 1" draggable="false"></div>
-        <div class="canvas-slide"><img src="Asset/ScenarioCanvas/3_ScenarioCanvas_02.jpg" alt="시나리오 캔버스 2" draggable="false"></div>
-        <div class="canvas-slide"><img src="Asset/ScenarioCanvas/3_ScenarioCanvas_03.jpg" alt="시나리오 캔버스 3" draggable="false"></div>
-        <div class="canvas-slide"><img src="Asset/ScenarioCanvas/3_ScenarioCanvas_04.jpg" alt="시나리오 캔버스 4" draggable="false"></div>
-        <div class="canvas-slide"><img src="Asset/ScenarioCanvas/3_ScenarioCanvas_05.jpg" alt="시나리오 캔버스 5" draggable="false"></div>
+        <div class="canvas-slide active"><img src="assets/ScenarioCanvas/3_ScenarioCanvas_01.jpg" alt="시나리오 캔버스 1" draggable="false"></div>
+        <div class="canvas-slide"><img src="assets/ScenarioCanvas/3_ScenarioCanvas_02.jpg" alt="시나리오 캔버스 2" draggable="false"></div>
+        <div class="canvas-slide"><img src="assets/ScenarioCanvas/3_ScenarioCanvas_03.jpg" alt="시나리오 캔버스 3" draggable="false"></div>
+        <div class="canvas-slide"><img src="assets/ScenarioCanvas/3_ScenarioCanvas_04.jpg" alt="시나리오 캔버스 4" draggable="false"></div>
+        <div class="canvas-slide"><img src="assets/ScenarioCanvas/3_ScenarioCanvas_05.jpg" alt="시나리오 캔버스 5" draggable="false"></div>
       </div>
       <div class="canvas-bottom-controls">
         <div id="scenario-indicator" class="canvas-pagination" aria-label="시나리오 캔버스 페이지">
@@ -41,7 +41,8 @@
         </div>
       </div>
     </div>
-  </section>
+    </section>
+  </main>
 
   <button id="start-overlay" class="start-overlay" type="button" aria-label="클릭하여 시작">
     <span class="start-guide-content">
@@ -59,6 +60,6 @@
     <button id="volume-button" class="media-volume-button" type="button" aria-label="음소거">🔊</button>
   </div>
 
-  <script type="module" src="app.js?v=20260807-comply-r1"></script>
+  <script type="module" src="assets/app.js?v=20260807-comply-r1"></script>
 </body>
 </html>
