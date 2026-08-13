@@ -93,7 +93,7 @@ function togglePlayback() {
 async function playVideo(source, { prepared = false } = {}) {
   cancelVideoFade({ restore: true });
   videoExitPending = false;
-  scenarioHeader.classList.remove("active");
+  scenarioHeader.classList.add("active");
   scenarioStage.classList.remove("active");
   sequenceVideo.hidden = false;
   sequenceVideo.classList.remove("leaving");
@@ -158,7 +158,7 @@ function syncScenarioFromScroll() {
     return;
   }
 
-  scenarioHeader.classList.remove("active");
+  scenarioHeader.classList.toggle("active", relativeScroll < 0 || state === "intro");
   if (state === "scenario" && relativeScroll < 0) {
     state = "intro";
     renderScenario(0);
@@ -245,7 +245,7 @@ function resetExperience() {
   sequenceVideo.load();
   sequenceVideo.hidden = false;
   sequenceVideo.classList.remove("leaving");
-  scenarioHeader.classList.remove("active");
+  scenarioHeader.classList.add("active");
   scenarioStage.classList.remove("active");
   skipButton.hidden = true;
   playbackButton.hidden = true;
