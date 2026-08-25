@@ -471,8 +471,8 @@ body {
 .scenario-canvas-stage {
   position: relative;
   z-index: 1;
-  height: calc(6 * 100vh);
-  min-height: 600vh;
+  height: calc(12 * 100vh);
+  min-height: 1200vh;
   scroll-snap-align: start;
   overflow: visible;
   background: rgb(232 231 228 / .45);

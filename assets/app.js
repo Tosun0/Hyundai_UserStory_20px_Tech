@@ -10,7 +10,7 @@ const scenarioStage = document.querySelector("#scenario-canvas");
 const scenarioTrack = document.querySelector("#scenario-canvas-track");
 const scenarioDots = document.querySelectorAll("#scenario-indicator .p-dot");
 const indicatorCounter = document.querySelector("#indicator-counter");
-const TOTAL_CANVAS_SLIDES = 5;
+const TOTAL_CANVAS_SLIDES = 11;
 const introSource = "assets/Playbook/playbook_video_3_intro.webm";
 const VIDEO_FADE_DURATION = 700;
 
@@ -122,7 +122,7 @@ function renderScenario(index) {
     slide.classList.toggle("active", idx === canvasIndex);
   });
   scenarioDots.forEach((dot, idx) => dot.classList.toggle("active", idx === canvasIndex));
-  indicatorCounter.textContent = `${String(canvasIndex + 1).padStart(2, "0")} / 05`;
+  indicatorCounter.textContent = `${String(canvasIndex + 1).padStart(2, "0")} / 11`;
 }
 
 function scrollToScenario(index = 0) {
