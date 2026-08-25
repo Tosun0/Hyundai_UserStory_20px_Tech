@@ -63,7 +63,13 @@
     function activateSection(sectionId) { if (!settings.sections[sectionId] || state.sectionId === sectionId) return; state.sectionId = sectionId; state.tab = settings.sections[sectionId].defaultTab; render(); }
     tabs.forEach((tab) => tab.addEventListener("click", () => { if (getDefinition().tabs.includes(tab.dataset.tab)) { state.tab = tab.dataset.tab; render(); } }));
     content.addEventListener("click", (event) => { const target = event.target.closest("button"); if (!target) return; if (target.dataset.poll !== undefined) { const index = Number(target.dataset.poll); const maxSelections = getDefinition().poll.maxSelections || 1; if (state.pollSelections.has(index)) state.pollSelections.delete(index); else if (state.pollSelections.size < maxSelections) { if (maxSelections === 1) state.pollSelections.clear(); state.pollSelections.add(index); } render(); return; } if (target.dataset.ab) { state.abSelection = target.dataset.ab; render(); return; } if (target.dataset.action === "submit-poll") { state.pollSubmitted = true; render(true); return; } if (target.dataset.action === "reset-poll") { state.pollSubmitted = false; state.pollSelections.clear(); render(); return; } if (target.dataset.action === "submit-ab") { state.abSubmitted = true; render(true); return; } if (target.dataset.action === "reset-ab") { state.abSubmitted = false; render(); return; } if (target.dataset.action === "add-comment") { const input = root.querySelector("[data-comment-input]"); const value = input.value.trim(); if (!value) return; state.comments.unshift(value); render(); } });
-    root.querySelector('[data-action="collapse"]').addEventListener("click", () => { state.collapsed = !state.collapsed; panel.classList.toggle("is-collapsed", state.collapsed); });
+    const collapseButton = root.querySelector('[data-action="collapse"]');
+    collapseButton.addEventListener("click", () => {
+      state.collapsed = !state.collapsed;
+      panel.classList.toggle("is-collapsed", state.collapsed);
+      collapseButton.textContent = state.collapsed ? "⌃" : "⌄";
+      collapseButton.setAttribute("aria-label", state.collapsed ? "패널 최대화" : "패널 최소화");
+    });
     root.querySelector('[data-action="close"]').addEventListener("click", () => { panel.classList.add("is-hidden"); root.querySelector('[data-action="open"]').classList.remove("is-hidden"); });
     root.querySelector('[data-action="open"]').addEventListener("click", () => { panel.classList.remove("is-hidden"); root.querySelector('[data-action="open"]').classList.add("is-hidden"); });
     render();

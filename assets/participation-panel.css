@@ -37,13 +37,21 @@ textarea {
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   pointer-events: auto;
-  transition: opacity .22s ease, transform .22s ease;
+  transition: opacity .22s ease, transform .22s ease, max-height .28s ease;
 }
 
 .participation-panel.is-hidden {
   opacity: 0;
   pointer-events: none;
   transform: translateY(14px) scale(.98);
+}
+
+.participation-panel.is-collapsed {
+  max-height: 68px;
+}
+
+.participation-panel.is-collapsed .participation-panel__body {
+  display: none;
 }
 
 .participation-panel__header {
@@ -93,17 +101,24 @@ textarea {
 
 .participation-panel__control {
   display: grid;
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
   padding: 0;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, .16);
-  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 9px;
   background: rgba(255, 255, 255, .1);
-  color: #fff;
-  font-size: 18px;
+  color: #e4e7ee;
+  font-size: 16px;
   line-height: 1;
   cursor: pointer;
+  transition: background .2s ease, color .2s ease;
+}
+
+.participation-panel__control:hover {
+  background: rgba(255, 255, 255, .2);
+  color: #fff;
 }
 
 .participation-panel__body {
@@ -441,15 +456,16 @@ textarea {
   right: 24px;
   bottom: 24px;
   z-index: 1;
-  min-width: 52px;
-  height: 52px;
-  padding: 0 18px;
-  border: 0;
-  border-radius: 999px;
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 9px;
   background: #1a1a1a;
   color: #fff;
   box-shadow: 0 14px 38px rgba(0, 0, 0, .26);
-  font-size: 18px;
+  font-size: 16px;
   pointer-events: auto;
   cursor: pointer;
 }
