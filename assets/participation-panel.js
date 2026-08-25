@@ -1,4 +1,5 @@
 (function () {
+  const stylesheetHref = new URL("participation-panel.css", document.currentScript?.src || window.location.href).href;
   const defaultConfig = {
     user: { name: "토순", avatar: "토" },
     sections: {
@@ -26,9 +27,10 @@
     }
   };
 
-  function createParticipationPanel(root, config = {}) {
+  function createParticipationPanel(host, config = {}) {
+    const root = host.shadowRoot || host.attachShadow({ mode: "open" });
     const settings = { ...defaultConfig, ...config, user: { ...defaultConfig.user, ...(config.user || {}) }, sections: config.sections || defaultConfig.sections };
-    root.innerHTML = `<section class="participation-panel" data-panel><header class="participation-panel__header"><div class="participation-panel__title"><strong data-title></strong><small data-subtitle></small></div><span class="participation-panel__status" data-status></span><button class="participation-panel__control" data-action="collapse" type="button" aria-label="패널 최소화">⌄</button><button class="participation-panel__control" data-action="close" type="button" aria-label="패널 닫기">×</button></header><div class="participation-panel__body"><nav class="participation-panel__tabs" data-tabs><button class="participation-panel__tab" data-tab="poll" type="button"><strong>투표</strong><span data-count="poll">● 미응답</span></button><button class="participation-panel__tab" data-tab="ab" type="button"><strong>A/B 선택</strong><span data-count="ab">● 미응답</span></button><button class="participation-panel__tab" data-tab="comments" type="button"><strong>댓글</strong><span data-count="comments">0</span></button></nav><div class="participation-panel__content" data-content></div></div></section><button class="participation-panel__launcher is-hidden" data-action="open" type="button" aria-label="패널 열기">⌃</button>`;
+    root.innerHTML = `<link rel="stylesheet" href="${stylesheetHref}"><section class="participation-panel" data-panel><header class="participation-panel__header"><div class="participation-panel__title"><strong data-title></strong><small data-subtitle></small></div><span class="participation-panel__status" data-status></span><button class="participation-panel__control" data-action="collapse" type="button" aria-label="패널 최소화">⌄</button><button class="participation-panel__control" data-action="close" type="button" aria-label="패널 닫기">×</button></header><div class="participation-panel__body"><nav class="participation-panel__tabs" data-tabs><button class="participation-panel__tab" data-tab="poll" type="button"><strong>투표</strong><span data-count="poll">● 미응답</span></button><button class="participation-panel__tab" data-tab="ab" type="button"><strong>A/B 선택</strong><span data-count="ab">● 미응답</span></button><button class="participation-panel__tab" data-tab="comments" type="button"><strong>댓글</strong><span data-count="comments">0</span></button></nav><div class="participation-panel__content" data-content></div></div></section><button class="participation-panel__launcher is-hidden" data-action="open" type="button" aria-label="패널 열기">⌃</button>`;
     const panel = root.querySelector("[data-panel]");
     const content = root.querySelector("[data-content]");
     const title = root.querySelector("[data-title]");
