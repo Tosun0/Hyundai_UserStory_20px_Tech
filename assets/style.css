@@ -21,7 +21,6 @@ body {
   overflow-x: clip;
   background: #000;
   scroll-behavior: smooth;
-  scroll-snap-type: y proximity;
 }
 
 .sequence-root {
@@ -31,7 +30,6 @@ body {
   min-height: 100vh;
   overflow: visible;
   background: #000;
-  scroll-snap-align: start;
 }
 
 #sequence-video {
@@ -471,9 +469,8 @@ body {
 .scenario-canvas-stage {
   position: relative;
   z-index: 1;
-  height: calc(12 * 100vh);
-  min-height: 1200vh;
-  scroll-snap-align: start;
+  height: auto;
+  min-height: 100vh;
   overflow: visible;
   background: rgb(232 231 228 / .45);
   backdrop-filter: blur(12px);
@@ -481,6 +478,12 @@ body {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
+}
+
+.scenario-canvas-stage::after {
+  content: "";
+  display: block;
+  min-height: 1100vh;
 }
 
 .scenario-canvas-stage.active {

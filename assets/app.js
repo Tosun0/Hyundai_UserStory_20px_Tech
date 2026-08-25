@@ -18,7 +18,6 @@ let state = "intro";
 let canvasIndex = 0;
 let previousScrollY = window.scrollY;
 let scrollDirection = 0;
-let scrollEndTimer;
 let closeVolumeTimer;
 let hidePlaybackTimer;
 let suppressVideoClickUntil = 0;
@@ -185,26 +184,6 @@ function showStartGuide() {
   startOverlay.classList.add("scroll-visible");
 }
 
-function snapToSectionBoundary(direction) {
-  if (!direction) return;
-  const scrollY = window.scrollY;
-  const threshold = Math.min(window.innerHeight, 900);
-  const scenarioTop = scenarioStage.offsetTop;
-  const firstCanvasPage = (scenarioStage.offsetHeight - window.innerHeight) / TOTAL_CANVAS_SLIDES;
-  let target;
-
-  if (direction < 0) {
-    const relativeScroll = scrollY - scenarioTop;
-    if (scrollY <= 0 || relativeScroll > firstCanvasPage * .5) return;
-    target = 0;
-  } else if (scrollY < scenarioTop && scenarioTop - scrollY <= threshold) {
-    target = scenarioTop;
-  }
-
-  if (target === undefined || Math.abs(target - scrollY) > threshold) return;
-  window.scrollTo({ top: target, behavior: "smooth" });
-}
-
 function handlePageScroll() {
   const currentScrollY = window.scrollY;
   if (currentScrollY !== previousScrollY) {
@@ -215,9 +194,6 @@ function handlePageScroll() {
   if (scrollDirection > 0 && currentScrollY > 0) hideStartGuide();
   if (scrollDirection < 0 && currentScrollY <= Math.min(window.innerHeight * 0.65, 520)) showStartGuide();
 
-  if ("onscrollend" in window) return;
-  window.clearTimeout(scrollEndTimer);
-  scrollEndTimer = window.setTimeout(() => snapToSectionBoundary(scrollDirection), 140);
 }
 
 function finishVideo() {
@@ -292,9 +268,6 @@ scenarioDots.forEach((dot) => {
   dot.addEventListener("click", () => scrollToScenario(Number(dot.dataset.idx)));
 });
 window.addEventListener("scroll", handlePageScroll, { passive: true });
-if ("onscrollend" in window) {
-  window.addEventListener("scrollend", () => snapToSectionBoundary(scrollDirection), { passive: true });
-}
 
 function openVolume() {
   window.clearTimeout(closeVolumeTimer);
