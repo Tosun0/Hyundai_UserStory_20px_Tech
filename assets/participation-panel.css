@@ -160,3 +160,68 @@ button { cursor: pointer; }
   .participation-panel { right: 12px; bottom: 12px; width: calc(100vw - 24px); max-height: calc(100vh - 24px); }
   .participation-panel__ab { grid-template-columns: 1fr; }
 }
++.participation-panel.is-collapsed {
+  width: min(248px, calc(100vw - 24px));
+  max-height: 54px;
+  border-color: rgba(26, 26, 26, .12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .96);
+  box-shadow: 0 16px 42px rgba(20, 28, 42, .2);
+}
+
+.participation-panel.is-collapsed .participation-panel__header {
+  min-height: 52px;
+  padding: 0 10px 0 16px;
+  background: transparent;
+  color: #1a1a1a;
+}
+
+.participation-panel.is-collapsed .participation-panel__title {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.participation-panel.is-collapsed .participation-panel__title strong {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.participation-panel.is-collapsed .participation-panel__title small {
+  display: none;
+}
+
+.participation-panel.is-collapsed .participation-panel__status {
+  margin-left: 8px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #314a9a;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.participation-panel.is-collapsed .participation-panel__control {
+  width: 30px;
+  height: 30px;
+  flex-basis: 30px;
+  border-radius: 50%;
+  background: #f0f2f5;
+  color: #596273;
+  font-size: 13px;
+  transition: background .2s ease, color .2s ease, transform .2s ease;
+}
+
+.participation-panel.is-collapsed .participation-panel__control:hover {
+  background: #1a1a1a;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.participation-panel.is-collapsed button[data-action="close"] {
+  display: none;
+}
