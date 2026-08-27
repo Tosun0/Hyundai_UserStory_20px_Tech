@@ -42,7 +42,7 @@ button { cursor: pointer; }
 
 .participation-panel.is-hidden { opacity: 0; pointer-events: none; transform: translateY(18px) scale(.98); }
 .participation-panel.is-collapsed { max-height: 48px; }
-.participation-panel.is-collapsed .participation-panel__body { display: none; }
+.participation-panel.is-collapsed .participation-panel__body { max-height: 0; opacity: 0; overflow: hidden; pointer-events: none; }
 
 .participation-panel__header {
   display: flex;
@@ -152,7 +152,9 @@ button { cursor: pointer; }
 .participation-panel__comment p { margin: 9px 0 0; font-size: 14px; line-height: 1.55; }
 .participation-panel__empty { margin: 20px 0 0; font-size: 13px; line-height: 1.5; text-align: center; }
 
-.participation-panel__launcher { position: absolute; right: 16px; bottom: 16px; z-index: 1; width: 30px; height: 30px; padding: 0; border: 1px solid rgba(255, 255, 255, .18); border-radius: 9px; background: #1a1a1a; color: #fff; box-shadow: 0 8px 24px rgba(35, 44, 62, .16); font-size: 12px; line-height: 1; pointer-events: auto; transition: transform .2s ease, opacity .2s ease, background .2s ease; }
+.participation-panel__launcher { display: flex; align-items: center; justify-content: center; position: absolute; right: 16px; bottom: 16px; z-index: 1; min-width: 112px; min-height: 40px; gap: 6px; padding: 0 14px; border: 0; border-radius: 999px; background: #1a1a1a; color: #fff; box-shadow: 0 8px 24px rgba(35, 44, 62, .16); font-size: 0; line-height: 1; pointer-events: auto; transition: transform .2s ease, opacity .2s ease, background .2s ease; }
+.participation-panel__launcher::before { content: "💬"; font-size: 14px; line-height: 1; }
+.participation-panel__launcher::after { content: "참여하기"; font-size: 12px; font-weight: 700; line-height: 1; }
 .participation-panel__launcher:hover { background: #2b2f38; transform: translateY(-2px); }
 .participation-panel__launcher.is-hidden { opacity: 0; pointer-events: none; transform: translateY(12px); }
 
@@ -160,7 +162,7 @@ button { cursor: pointer; }
   .participation-panel { right: 12px; bottom: 12px; width: calc(100vw - 24px); max-height: calc(100vh - 24px); }
   .participation-panel__ab { grid-template-columns: 1fr; }
 }
-+.participation-panel.is-collapsed {
+.participation-panel.is-collapsed {
   width: min(248px, calc(100vw - 24px));
   max-height: 54px;
   border-color: rgba(26, 26, 26, .12);
