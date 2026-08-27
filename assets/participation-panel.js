@@ -1,7 +1,7 @@
 (function () {
   const stylesheetHref = `${new URL("participation-panel.css", document.currentScript?.src || window.location.href).href}?v=20260826-u4-r2`;
   const defaultConfig = {
-    user: { name: "토순", avatar: "토" },
+    user: { name: "사용자", avatar: "사" },
     sections: {
       playbook: {
         title: "Playbook",
