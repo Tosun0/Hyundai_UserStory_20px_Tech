@@ -42,7 +42,7 @@ button { cursor: pointer; }
 
 .participation-panel.is-hidden { opacity: 0; pointer-events: none; transform: translateY(18px) scale(.98); }
 .participation-panel.is-collapsed { max-height: 48px; }
-.participation-panel.is-collapsed .participation-panel__body { max-height: 0; opacity: 0; overflow: hidden; pointer-events: none; }
+.participation-panel.is-collapsed .participation-panel__body { max-height: 640px; opacity: 0; transform: translateY(-8px); overflow: hidden; pointer-events: none; }
 
 .participation-panel__header {
   display: flex;
@@ -78,7 +78,7 @@ button { cursor: pointer; }
 }
 
 .participation-panel__control:hover { color: #fff; }
-.participation-panel__body { max-height: 640px; overflow: auto; scrollbar-color: #c8ccd4 transparent; scrollbar-width: thin; transition: max-height .28s ease, opacity .2s ease; }
+.participation-panel__body { max-height: 640px; overflow: auto; scrollbar-color: #c8ccd4 transparent; scrollbar-width: thin; transition: opacity .18s ease, transform .28s ease; }
 
 .participation-panel__tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid #e8e8e8; background: rgba(255, 255, 255, .7); }
 .participation-panel__tabs.is-single { display: none; }
