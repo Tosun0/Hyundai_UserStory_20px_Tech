@@ -165,9 +165,9 @@ button { cursor: pointer; }
 .participation-panel.is-collapsed {
   width: min(248px, calc(100vw - 24px));
   max-height: 54px;
-  border-color: rgba(26, 26, 26, .12);
+  border-color: rgba(255, 255, 255, .18);
   border-radius: 999px;
-  background: rgba(255, 255, 255, .96);
+  background: #1a1a1a;
   box-shadow: 0 16px 42px rgba(20, 28, 42, .2);
 }
 
@@ -175,7 +175,7 @@ button { cursor: pointer; }
   min-height: 52px;
   padding: 0 10px 0 16px;
   background: transparent;
-  color: #1a1a1a;
+  color: #fff;
 }
 
 .participation-panel.is-collapsed .participation-panel__title {
@@ -201,8 +201,8 @@ button { cursor: pointer; }
   margin-left: 8px;
   padding: 5px 8px;
   border-radius: 999px;
-  background: #eef2ff;
-  color: #314a9a;
+  background: rgba(255, 255, 255, .12);
+  color: rgba(255, 255, 255, .78);
   font-size: 10px;
   line-height: 1;
 }
@@ -212,15 +212,15 @@ button { cursor: pointer; }
   height: 30px;
   flex-basis: 30px;
   border-radius: 50%;
-  background: #f0f2f5;
-  color: #596273;
+  background: rgba(255, 255, 255, .12);
+  color: rgba(255, 255, 255, .88);
   font-size: 13px;
   transition: background .2s ease, color .2s ease, transform .2s ease;
 }
 
 .participation-panel.is-collapsed .participation-panel__control:hover {
-  background: #1a1a1a;
-  color: #fff;
+  background: #fff;
+  color: #1a1a1a;
   transform: translateY(-1px);
 }
 
