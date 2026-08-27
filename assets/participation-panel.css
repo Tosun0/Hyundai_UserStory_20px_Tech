@@ -78,7 +78,7 @@ button { cursor: pointer; }
 }
 
 .participation-panel__control:hover { color: #fff; }
-.participation-panel__body { max-height: 640px; overflow: auto; scrollbar-color: #c8ccd4 transparent; scrollbar-width: thin; }
+.participation-panel__body { max-height: 640px; overflow: auto; scrollbar-color: #c8ccd4 transparent; scrollbar-width: thin; transition: max-height .28s ease, opacity .2s ease; }
 
 .participation-panel__tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid #e8e8e8; background: rgba(255, 255, 255, .7); }
 .participation-panel__tabs.is-single { display: none; }
