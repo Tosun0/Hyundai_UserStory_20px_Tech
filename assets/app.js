@@ -8,9 +8,12 @@ const volumeSlider = document.querySelector("#volume-slider");
 const scenarioHeader = document.querySelector("#scenario-header");
 const scenarioStage = document.querySelector("#scenario-canvas");
 const scenarioTrack = document.querySelector("#scenario-canvas-track");
-const scenarioDots = document.querySelectorAll("#scenario-indicator .p-dot");
+const scenarioSlides = [...scenarioTrack.querySelectorAll(".canvas-slide")];
+const scenarioDotsContainer = document.querySelector("#scenario-indicator .pagination-dots");
+scenarioDotsContainer.innerHTML = scenarioSlides.map((_, index) => `<button class="p-dot${index === 0 ? " active" : ""}" type="button" data-idx="${index}" aria-label="${index + 1}페이지"></button>`).join("");
+const scenarioDots = scenarioDotsContainer.querySelectorAll(".p-dot");
 const indicatorCounter = document.querySelector("#indicator-counter");
-const TOTAL_CANVAS_SLIDES = 11;
+const TOTAL_CANVAS_SLIDES = scenarioSlides.length;
 const introSource = "assets/Playbook/playbook_video_3_intro.webm";
 const VIDEO_FADE_DURATION = 700;
 
@@ -121,7 +124,7 @@ function renderScenario(index) {
     slide.classList.toggle("active", idx === canvasIndex);
   });
   scenarioDots.forEach((dot, idx) => dot.classList.toggle("active", idx === canvasIndex));
-  indicatorCounter.textContent = `${String(canvasIndex + 1).padStart(2, "0")} / 11`;
+  indicatorCounter.textContent = `${String(canvasIndex + 1).padStart(2, "0")} / ${String(TOTAL_CANVAS_SLIDES).padStart(2, "0")}`;
 }
 
 function scrollToScenario(index = 0) {

@@ -46,6 +46,7 @@
     const tabs = [...root.querySelectorAll("[data-tab]")];
     const state = { sectionId: config.initialSectionId || "playbook", tab: "poll", responses: new Map(), collapsed: false };
     let meterFrame = 0;
+    let meterPaintFrame = 0;
 
     const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", "\"": "&quot;" })[character]);
     const getDefinition = () => settings.sections[state.sectionId] || settings.sections.playbook;
@@ -53,20 +54,36 @@
       if (!state.responses.has(sectionId)) state.responses.set(sectionId, { pollSelections: new Set(), pollSubmitted: false, abSelection: "", abSubmitted: false, comments: [] });
       return state.responses.get(sectionId);
     };
-    const setMeters = () => { window.cancelAnimationFrame(meterFrame); meterFrame = window.requestAnimationFrame(() => root.querySelectorAll("[data-meter]").forEach((meter) => meter.classList.add("is-visible"))); };
+    const getMeterFills = (fills, count) => {
+      const values = Array.isArray(fills) ? fills.slice(0, count).map((value) => Math.max(0, Math.min(100, Number(value) || 0))) : [];
+      if (values.length === count && values.some((value) => value > 0)) return values;
+      const base = Math.floor(100 / Math.max(count, 1));
+      return Array.from({ length: count }, (_, index) => base + (index < 100 - base * count ? 1 : 0));
+    };
+    const setMeters = () => {
+      window.cancelAnimationFrame(meterFrame);
+      window.cancelAnimationFrame(meterPaintFrame);
+      const meters = [...root.querySelectorAll("[data-meter]")];
+      meters.forEach((meter) => meter.classList.remove("is-visible"));
+      meterFrame = window.requestAnimationFrame(() => {
+        meterPaintFrame = window.requestAnimationFrame(() => meters.forEach((meter) => meter.classList.add("is-visible")));
+      });
+    };
     const renderResultRow = (participants, resetAction) => `<div class="participation-panel__result"><span>${participants || "응답 결과"}</span><span class="participation-panel__spacer"></span><button class="participation-panel__link" data-action="${resetAction}" type="button">다시 선택</button><span class="participation-panel__link">결과 보기</span></div>`;
 
     function renderPoll(definition) {
       const poll = definition.poll;
       const response = getResponse();
-      if (response.pollSubmitted) return `<div class="participation-panel__question">${poll.question}</div><div class="participation-panel__stack">${poll.options.map((option, index) => `<div class="participation-panel__meter" data-meter style="--fill:${poll.fills?.[index] || 0}%"><span>${option} · <b>${poll.fills?.[index] || 0}%</b>${response.pollSelections.has(index) ? " ✓ 내 선택" : ""}</span></div>`).join("")}</div>${renderResultRow(poll.participants, "reset-poll")}`;
+      const fills = getMeterFills(poll.fills, poll.options.length);
+      if (response.pollSubmitted) return `<div class="participation-panel__question">${poll.question}</div><div class="participation-panel__stack">${poll.options.map((option, index) => `<div class="participation-panel__meter" data-meter style="--fill:${fills[index]}%"><span>${option} · <b>${fills[index]}%</b>${response.pollSelections.has(index) ? " ✓ 내 선택" : ""}</span></div>`).join("")}</div>${renderResultRow(poll.participants, "reset-poll")}`;
       return `<div class="participation-panel__question">${poll.question}</div><div class="participation-panel__hint">${poll.hint}</div><div class="participation-panel__stack">${poll.options.map((option, index) => `<button class="participation-panel__choice ${response.pollSelections.has(index) ? "is-selected" : ""}" data-poll="${index}" type="button"><span class="participation-panel__mark">${response.pollSelections.has(index) ? "✓" : ""}</span><span>${option}</span></button>`).join("")}</div><div class="participation-panel__button-row"><span class="participation-panel__spacer"></span><button class="participation-panel__submit" data-action="submit-poll" type="button" ${response.pollSelections.size === 0 ? "disabled" : ""}>응답</button></div>`;
     }
 
     function renderAb(definition) {
       const ab = definition.ab;
       const response = getResponse();
-      if (response.abSubmitted) return `<div class="participation-panel__question">${ab.question}</div><div class="participation-panel__stack">${ab.options.map((option, index) => `<div class="participation-panel__meter" data-meter style="--fill:${ab.fills[index] || 0}%"><span>${option.label} · <b>${ab.fills[index] || 0}%</b>${response.abSelection === option.id ? " ✓ 내 선택" : ""}</span></div>`).join("")}</div>${renderResultRow(ab.participants, "reset-ab")}<div class="participation-panel__completion-note">회차가 진행 중인 동안에는 언제든 바꿀 수 있습니다.</div>`;
+      const fills = getMeterFills(ab.fills, ab.options.length);
+      if (response.abSubmitted) return `<div class="participation-panel__question">${ab.question}</div><div class="participation-panel__stack">${ab.options.map((option, index) => `<div class="participation-panel__meter" data-meter style="--fill:${fills[index]}%"><span>${option.label} · <b>${fills[index]}%</b>${response.abSelection === option.id ? " ✓ 내 선택" : ""}</span></div>`).join("")}</div>${renderResultRow(ab.participants, "reset-ab")}<div class="participation-panel__completion-note">회차가 진행 중인 동안에는 언제든 바꿀 수 있습니다.</div>`;
       return `<div class="participation-panel__question">${ab.question}</div><div class="participation-panel__hint">${ab.hint}</div><div class="participation-panel__ab">${ab.options.map((option) => `<button class="participation-panel__ab-card ${response.abSelection === option.id ? "is-selected" : ""}" data-ab="${option.id}" type="button"><strong>${option.label}</strong><span>${option.detail}</span></button>`).join("")}</div><div class="participation-panel__button-row"><span class="participation-panel__spacer"></span><button class="participation-panel__submit" data-action="submit-ab" type="button" ${response.abSelection ? "" : "disabled"}>응답</button></div>`;
     }
 
