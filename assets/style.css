@@ -20,7 +20,7 @@ body {
   margin: 0;
   overflow-x: clip;
   background: #000;
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
 }
 
 .sequence-root {
@@ -295,7 +295,8 @@ body {
 .media-volume-control {
   position: fixed;
   z-index: 100;
-  right: 28px;
+  left: 28px;
+  right: auto;
   bottom: 28px;
   width: 58px;
   height: 58px;
@@ -389,7 +390,8 @@ body {
   }
 
   .media-volume-control {
-    right: max(6px, env(safe-area-inset-right));
+    left: max(6px, env(safe-area-inset-left));
+    right: auto;
     bottom: max(12px, env(safe-area-inset-bottom));
     width: 48px;
     height: 48px;
