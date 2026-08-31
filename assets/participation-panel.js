@@ -1,5 +1,5 @@
 (function () {
-  const stylesheetHref = `${new URL("participation-panel.css", document.currentScript?.src || window.location.href).href}?v=20260831-motion-r1`;
+  const stylesheetHref = `${new URL("participation-panel.css", document.currentScript?.src || window.location.href).href}?v=20260831-panel-r2`;
   const defaultConfig = {
     user: { name: "사용자", avatar: "사" },
     sections: {
@@ -64,7 +64,6 @@
       window.cancelAnimationFrame(meterPaintFrame);
       const meters = [...root.querySelectorAll("[data-meter]")];
       meters.forEach((meter) => meter.classList.remove("is-visible"));
-      meters.forEach((meter) => meter.getBoundingClientRect());
       meterFrame = window.requestAnimationFrame(() => {
         meterPaintFrame = window.requestAnimationFrame(() => meters.forEach((meter) => meter.classList.add("is-visible")));
       });
@@ -103,7 +102,7 @@
       collapseButton.setAttribute("aria-label", state.collapsed ? "패널 최대화" : "패널 최소화");
     });
     root.querySelector('[data-action="close"]').addEventListener("click", () => { panel.classList.add("is-hidden"); root.querySelector('[data-action="open"]').classList.remove("is-hidden"); });
-    root.querySelector('[data-action="open"]').addEventListener("click", () => { panel.classList.remove("is-hidden"); root.querySelector('[data-action="open"]').classList.add("is-hidden"); render(true); });
+    root.querySelector('[data-action="open"]').addEventListener("click", () => { panel.classList.remove("is-hidden"); root.querySelector('[data-action="open"]').classList.add("is-hidden"); });
     render();
     return Object.freeze({ activateSection, config: settings });
   }
