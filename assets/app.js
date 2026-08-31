@@ -1,3 +1,42 @@
+if (window.history) window.history.scrollRestoration = "manual";
+
+let scrollResetTimers = [];
+let shouldResetScroll = true;
+
+function resetScrollPosition() {
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+}
+
+function cancelScrollReset() {
+  shouldResetScroll = false;
+  scrollResetTimers.forEach(window.clearTimeout);
+  scrollResetTimers = [];
+}
+
+function scheduleScrollReset() {
+  shouldResetScroll = true;
+  scrollResetTimers.forEach(window.clearTimeout);
+  scrollResetTimers = [0, 32, 100, 250, 500, 1000, 1500, 1800].map((delay) => window.setTimeout(() => {
+    if (delay === 1800) {
+      shouldResetScroll = false;
+      return;
+    }
+    if (shouldResetScroll) resetScrollPosition();
+  }, delay));
+  resetScrollPosition();
+}
+
+["wheel", "touchstart", "pointerdown", "keydown"].forEach((eventName) => {
+  window.addEventListener(eventName, cancelScrollReset, { once: true, capture: true });
+});
+window.addEventListener("scroll", () => {
+  if (shouldResetScroll) resetScrollPosition();
+}, { passive: true, capture: true });
+scheduleScrollReset();
+window.addEventListener("pageshow", scheduleScrollReset);
+
 const sequenceVideo = document.querySelector("#sequence-video");
 const startOverlay = document.querySelector("#start-overlay");
 const skipButton = document.querySelector("#skip-button");
