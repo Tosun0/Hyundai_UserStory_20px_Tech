@@ -131,7 +131,9 @@ button { cursor: pointer; }
 .participation-panel__submit:disabled { cursor: not-allowed; opacity: .35; }
 
 .participation-panel__meter { position: relative; overflow: hidden; min-height: 54px; padding: 14px 16px; border: 1px solid #e8e8e8; border-radius: 14px; background: #fff; color: #1a1a1a; font-size: 14px; line-height: 1.4; }
-.participation-panel__meter-fill { position: absolute; inset: 0 auto 0 0; width: 0; background: #dce6f8; pointer-events: none; transform: scaleX(0); transform-origin: left center; transition: transform .75s cubic-bezier(.16, 1, .3, 1); }
+.participation-panel__meter-fill { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; transform: scaleX(0); transform-origin: left center; transition: transform .75s cubic-bezier(.16, 1, .3, 1); }
+.participation-panel__meter-fill svg { display: block; width: 100%; height: 100%; }
+.participation-panel__meter-fill rect { fill: #dce6f8; }
 .participation-panel__meter.is-visible .participation-panel__meter-fill { transform: scaleX(1); }
 .participation-panel__meter span { position: relative; }
 .participation-panel__result { margin-top: 14px; color: #a1a6af; font-size: 12px; }
