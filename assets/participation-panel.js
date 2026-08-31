@@ -1,5 +1,5 @@
 (function () {
-  const stylesheetHref = `${new URL("participation-panel.css", document.currentScript?.src || window.location.href).href}?v=20260831-panel-r2`;
+  const stylesheetHref = `${new URL("participation-panel.css", document.currentScript?.src || window.location.href).href}?v=20260831-panel-r4`;
   const defaultConfig = {
     user: { name: "사용자", avatar: "사" },
     sections: {
