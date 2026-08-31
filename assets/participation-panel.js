@@ -1,5 +1,5 @@
 (function () {
-  const stylesheetHref = `${new URL("participation-panel.css", document.currentScript?.src || window.location.href).href}?v=20260826-u4-r2`;
+  const stylesheetHref = `${new URL("participation-panel.css", document.currentScript?.src || window.location.href).href}?v=20260831-motion-r1`;
   const defaultConfig = {
     user: { name: "사용자", avatar: "사" },
     sections: {
@@ -47,6 +47,17 @@
     const state = { sectionId: config.initialSectionId || "playbook", tab: "poll", responses: new Map(), collapsed: false };
     let meterFrame = 0;
     let meterPaintFrame = 0;
+    const motionTimerByElement = new WeakMap();
+    const playMotion = (element, className, duration) => {
+      if (!element) return;
+      window.clearTimeout(motionTimerByElement.get(element));
+      element.classList.remove(className);
+      element.getBoundingClientRect();
+      element.classList.add(className);
+      motionTimerByElement.set(element, window.setTimeout(() => element.classList.remove(className), duration));
+    };
+    const playPanelMotion = () => playMotion(panel, "is-entering", 460);
+    const playContentMotion = () => playMotion(content, "is-entering", 380);
 
     const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", "\"": "&quot;" })[character]);
     const getDefinition = () => settings.sections[state.sectionId] || settings.sections.playbook;
@@ -65,6 +76,7 @@
       window.cancelAnimationFrame(meterPaintFrame);
       const meters = [...root.querySelectorAll("[data-meter]")];
       meters.forEach((meter) => meter.classList.remove("is-visible"));
+      meters.forEach((meter) => meter.getBoundingClientRect());
       meterFrame = window.requestAnimationFrame(() => {
         meterPaintFrame = window.requestAnimationFrame(() => meters.forEach((meter) => meter.classList.add("is-visible")));
       });
@@ -92,8 +104,8 @@
     function submitComment() { const input = root.querySelector("[data-comment-input]"); const value = input?.value.trim(); if (!value) return; getResponse().comments.unshift(value); render(); }
     function bindCommentInput() { root.querySelector("[data-comment-input]")?.addEventListener("keydown", (event) => { if (event.key !== "Enter") return; if (event.shiftKey) return; event.preventDefault(); submitComment(); }); }
     function render(animate = false) { const definition = getDefinition(); const response = getResponse(); const enabledTabs = definition.tabs; if (!enabledTabs.includes(state.tab)) state.tab = definition.defaultTab; const pollComplete = Boolean(response.pollSubmitted); const abComplete = Boolean(response.abSubmitted); const currentComplete = state.tab === "poll" ? pollComplete : state.tab === "ab" ? abComplete : false; title.textContent = definition.title; subtitle.textContent = definition.subtitle; status.classList.toggle("is-complete", currentComplete); status.textContent = state.tab === "comments" ? String(response.comments.length) : currentComplete ? "✓ 응답 완료" : "● 미응답"; tabs.forEach((tab) => { const tabName = tab.dataset.tab; const counter = tab.querySelector(`[data-count="${tabName}"]`); const tabComplete = tabName === "poll" ? pollComplete : tabName === "ab" ? abComplete : false; if (counter) counter.textContent = tabName === "comments" ? String(response.comments.length) : tabComplete ? "✓ 응답 완료" : "● 미응답"; tab.hidden = !enabledTabs.includes(tabName); tab.classList.toggle("is-active", tabName === state.tab); }); content.innerHTML = state.tab === "poll" ? renderPoll(definition) : state.tab === "ab" ? renderAb(definition) : renderComments(definition); bindCommentInput(); if (animate || currentComplete) setMeters(); }
-    function activateSection(sectionId) { if (!settings.sections[sectionId] || state.sectionId === sectionId) return; state.sectionId = sectionId; state.tab = settings.sections[sectionId].defaultTab; render(); }
-    tabs.forEach((tab) => tab.addEventListener("click", () => { if (getDefinition().tabs.includes(tab.dataset.tab)) { state.tab = tab.dataset.tab; render(); } }));
+    function activateSection(sectionId) { if (!settings.sections[sectionId] || state.sectionId === sectionId) return; state.sectionId = sectionId; state.tab = settings.sections[sectionId].defaultTab; render(); playContentMotion(); }
+    tabs.forEach((tab) => tab.addEventListener("click", () => { if (getDefinition().tabs.includes(tab.dataset.tab)) { state.tab = tab.dataset.tab; render(); playContentMotion(); } }));
     content.addEventListener("click", (event) => { const target = event.target.closest("button"); if (!target) return; const response = getResponse(); if (target.dataset.poll !== undefined) { const index = Number(target.dataset.poll); const maxSelections = getDefinition().poll.maxSelections || 1; if (response.pollSelections.has(index)) response.pollSelections.delete(index); else if (response.pollSelections.size < maxSelections) { if (maxSelections === 1) response.pollSelections.clear(); response.pollSelections.add(index); } render(); return; } if (target.dataset.ab) { response.abSelection = target.dataset.ab; render(); return; } if (target.dataset.action === "submit-poll") { response.pollSubmitted = true; render(true); return; } if (target.dataset.action === "reset-poll") { response.pollSubmitted = false; response.pollSelections.clear(); render(); return; } if (target.dataset.action === "submit-ab") { response.abSubmitted = true; render(true); return; } if (target.dataset.action === "reset-ab") { response.abSubmitted = false; render(); return; } if (target.dataset.action === "add-comment") submitComment(); });
     const collapseButton = root.querySelector('[data-action="collapse"]');
     collapseButton.addEventListener("click", () => {
@@ -102,9 +114,10 @@
       collapseButton.textContent = state.collapsed ? "▴" : "▾";
       collapseButton.setAttribute("aria-label", state.collapsed ? "패널 최대화" : "패널 최소화");
     });
-    root.querySelector('[data-action="close"]').addEventListener("click", () => { panel.classList.add("is-hidden"); root.querySelector('[data-action="open"]').classList.remove("is-hidden"); });
-    root.querySelector('[data-action="open"]').addEventListener("click", () => { panel.classList.remove("is-hidden"); root.querySelector('[data-action="open"]').classList.add("is-hidden"); });
+    root.querySelector('[data-action="close"]').addEventListener("click", () => { panel.classList.remove("is-entering"); panel.classList.add("is-hidden"); root.querySelector('[data-action="open"]').classList.remove("is-hidden"); });
+    root.querySelector('[data-action="open"]').addEventListener("click", () => { panel.classList.remove("is-hidden"); root.querySelector('[data-action="open"]').classList.add("is-hidden"); render(true); playPanelMotion(); });
     render();
+    playPanelMotion();
     return Object.freeze({ activateSection, config: settings });
   }
 
